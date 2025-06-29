@@ -32,212 +32,134 @@
             padding: 20px;
         }
 
-        /* General styles for all news post previews - 3:4 ratio */
-        .news-post-preview {
+        /* Styling for the *rendering target* which is kept off-screen or hidden */
+        .render-target {
             width: 600px; /* Fixed width for consistent image output */
             height: 800px; /* Fixed height for consistent image output (3:4 aspect ratio) */
             background-color: #fff;
             position: relative;
-            overflow: hidden; /* Hide any overflowing content */
-            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+            overflow: hidden;
+            box-sizing: border-box;
+            /* IMPORTANT: This element is never displayed to the user */
+            position: absolute;
+            left: -9999px; /* Move far off-screen */
+            top: -9999px;
+            z-index: -1; /* Ensure it's behind everything */
+            /* Add some base styling that applies to all dynamically created styles */
             border-radius: 12px;
-            box-sizing: border-box; /* Include padding in width/height */
-            display: none; /* Hidden by default, JavaScript shows one */
-        }
-
-        .news-post-preview.active {
-            display: flex;
-            flex-direction: column;
-            justify-content: space-between;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1); /* For the generated image only */
         }
 
         .post-image {
             max-width: 100%;
             max-height: 100%;
-            object-fit: cover; /* Cover the area, crop if necessary */
+            object-fit: cover;
             position: absolute;
             top: 0;
             left: 0;
             width: 100%;
             height: 100%;
-            border-radius: 12px; /* Match parent container */
+            border-radius: 12px;
         }
 
-        /* Branding Text Styling (vikramadity.com) - Base Style */
+        /* Branding Text Styling (vikramaditya.com) - Base Style for dynamic rendering */
         .branding-text {
             position: absolute;
             color: white;
             font-size: 1.5rem; /* text-2xl for prominence */
             font-weight: bold;
-            text-shadow: 1px 1px 4px rgba(0, 0, 0, 0.8); /* Stronger shadow */
-            z-index: 15; /* Above other elements */
-            font-family: 'Bebas Neue', sans-serif; /* Ensure Bebas Neue for branding */
-            padding: 5px 10px; /* Some padding around the text */
+            text-shadow: 1px 1px 4px rgba(0, 0, 0, 0.8);
+            z-index: 15;
+            font-family: 'Bebas Neue', sans-serif;
+            padding: 5px 10px;
+            white-space: nowrap;
         }
 
-        /* Style 1: Perfect Copy (Bottom Black Bar) */
-        #style1Preview .text-overlay {
-            position: absolute;
-            bottom: 0;
-            left: 0;
-            right: 0;
-            background-color: rgba(0, 0, 0, 0.9); /* Opaque black background */
-            padding: 20px;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            justify-content: center;
-            color: white;
-            z-index: 10;
-            min-height: 25%; /* Ensure enough space for text */
-            box-sizing: border-box;
+        /* Style 1 */
+        .style1-text-overlay {
+            position: absolute; bottom: 0; left: 0; right: 0;
+            background-color: rgba(0, 0, 0, 0.9); padding: 20px;
+            display: flex; flex-direction: column; align-items: flex-start; /* Left Align */ justify-content: center;
+            color: white; z-index: 10; min-height: 25%; box-sizing: border-box;
         }
+        .style1-headline-text { text-transform: uppercase; text-align: left; line-height: 1.1; word-break: break-word; padding: 5px 0; text-shadow: 2px 2px 6px rgba(0, 0, 0, 0.9); width: 100%; }
+        .style1-details-text { text-transform: none; text-align: left; font-size: 1rem; opacity: 0.8; margin-top: 10px; line-height: 1.3; width: 100%; }
+        .style1-branding-text { top: 20px; right: 20px; bottom: unset; left: unset; }
 
-        #style1Preview .headline-text, #style1Preview .details-text {
-            text-transform: uppercase; /* Only headline for style 1 is uppercase */
-            text-align: center;
-            line-height: 1.1;
-            word-break: break-word;
-            padding: 5px 0;
-            text-shadow: 2px 2px 6px rgba(0, 0, 0, 0.9);
+        /* Style 2 */
+        .style2-text-overlay {
+            position: absolute; top: 0; left: 0; right: 0;
+            background-color: rgba(0, 0, 0, 0.85); padding: 20px;
+            display: flex; flex-direction: column; align-items: flex-start; /* Left Align */ justify-content: center;
+            color: white; z-index: 10; min-height: 20%; box-sizing: border-box;
         }
+        .style2-headline-text { text-transform: uppercase; text-align: left; line-height: 1.1; word-break: break-word; text-shadow: 2px 2px 6px rgba(0, 0, 0, 0.9); width: 100%; }
+        .style2-details-text { text-align: left; line-height: 1.2; word-break: break-word; margin-top: 10px; text-shadow: 1px 1px 3px rgba(0, 0, 0, 0.8); width: 100%; }
+        .style2-branding-text { bottom: 20px; right: 20px; top: unset; left: unset; }
 
-        #style1Preview .details-text {
-            text-transform: none; /* Details text not uppercase for style 1 */
-            font-size: 1rem; /* Smaller for source */
-            opacity: 0.8;
-            margin-top: 10px;
-            line-height: 1.3;
+        /* Style 3 */
+        .style3-text-overlay {
+            position: absolute; top: 0; bottom: 0; left: 0;
+            width: 40%; background-color: rgba(0, 0, 0, 0.9); padding: 20px;
+            display: flex; flex-direction: column; align-items: flex-start; /* Left Align */ justify-content: center;
+            color: white; z-index: 10; box-sizing: border-box; text-align: left;
         }
-        /* Style 1 Specific Branding Position: Top Right */
-        #style1Preview .branding-text {
-            top: 20px;
-            right: 20px;
-            bottom: unset;
-            left: unset;
-        }
+        .style3-headline-text { text-transform: uppercase; text-align: left; line-height: 1.1; word-break: break-word; text-shadow: 2px 2px 6px rgba(0, 0, 0, 0.9); margin-bottom: 10px; width: 100%; }
+        .style3-details-text { text-align: left; line-height: 1.2; word-break: break-word; text-shadow: 1px 1px 3px rgba(0, 0, 0, 0.8); width: 100%; }
+        .style3-branding-text { top: 20px; right: 20px; bottom: unset; left: unset; }
 
+        /* Style 4 */
+        .style4-text-overlay {
+            position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%);
+            width: 90%; max-height: 80%; background-color: rgba(0, 0, 0, 0.6); padding: 30px;
+            display: flex; flex-direction: column; align-items: flex-start; /* Left Align */ justify-content: center;
+            color: white; z-index: 10; box-sizing: border-box; border-radius: 10px;
+            text-align: left; overflow: hidden;
+        }
+        .style4-headline-text { text-transform: uppercase; text-align: left; line-height: 1.1; word-break: break-word; text-shadow: 2px 2px 6px rgba(0, 0, 0, 0.9); margin-bottom: 15px; width: 100%; }
+        .style4-details-text { text-align: left; line-height: 1.2; word-break: break-word; text-shadow: 1px 1px 3px rgba(0, 0, 0, 0.8); max-height: 50%; overflow: hidden; width: 100%; }
+        .style4-branding-text { top: 20px; left: 20px; bottom: unset; right: unset; }
 
-        /* Style 2: Top Bar Headline */
-        #style2Preview .text-overlay {
-            position: absolute;
-            top: 0;
-            left: 0;
-            right: 0;
-            background-color: rgba(0, 0, 0, 0.85);
-            padding: 20px;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            justify-content: center;
-            color: white;
-            z-index: 10;
-            min-height: 20%;
-            box-sizing: border-box;
-        }
-        #style2Preview .headline-text {
-            text-transform: uppercase;
-            text-align: center;
-            line-height: 1.1;
-            word-break: break-word;
-            text-shadow: 2px 2px 6px rgba(0, 0, 0, 0.9);
-        }
-        #style2Preview .details-text {
-            text-align: center;
-            line-height: 1.2;
-            word-break: break-word;
-            margin-top: 10px;
-            text-shadow: 1px 1px 3px rgba(0, 0, 0, 0.8);
-        }
-        /* Style 2 Specific Branding Position: Bottom Right */
-        #style2Preview .branding-text {
-            bottom: 20px;
-            right: 20px;
-            top: unset;
-            left: unset;
-        }
+        /* Style 5 */
+        .style5-top-section { background-color: #1a202c; padding: 20px; text-align: left; color: white; flex-shrink: 0; display: flex; flex-direction: column; align-items: flex-start; }
+        .style5-headline-text { text-transform: uppercase; text-align: left; line-height: 1.1; word-break: break-word; text-shadow: 1px 1px 3px rgba(0, 0, 0, 0.7); margin-bottom: 10px; width: 100%; }
+        .style5-emphasized-text-container { background-color: #dc2626; padding: 10px 15px; margin: 10px 0; /* Align left */ display: inline-block; border-radius: 4px; white-space: normal; }
+        .style5-emphasized-text { text-transform: uppercase; color: white; text-align: left; line-height: 1.1; word-break: break-word; text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.5); display: block; width: 100%; }
+        .style5-details-text { text-transform: none; text-align: left; font-size: 1rem; margin-top: 10px; line-height: 1.3; width: 100%; }
+        .style5-main-image-section { flex-grow: 1; position: relative; background-color: #000; display: flex; justify-content: center; align-items: center; padding: 20px; }
+        .style5-image-frame { position: relative; width: 90%; height: 90%; background-color: #2d3748; border-radius: 8px; overflow: hidden; box-shadow: inset 0 0 10px rgba(0,0,0,0.5); display: flex; justify-content: center; align-items: center; }
+        .style5-post-image-inside-frame { width: 95%; height: 95%; object-fit: cover; position: relative; border-radius: 4px; }
+        .style5-bottom-footer { background-color: #1a202c; padding: 15px 20px; text-align: left; color: white; flex-shrink: 0; font-size: 1.25rem; font-weight: bold; text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.5); }
+        .style5-branding-text { top: 20px; right: 20px; bottom: unset; left: unset; padding: 5px 10px; text-shadow: 1px 1px 4px rgba(0, 0, 0, 0.8); color: white; }
+        .style5-footer-branding { position: static; padding: 0; text-shadow: none; color: white; }
 
+        /* Style 6 */
+        .style6-text-overlay {
+            position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%);
+            width: 85%; max-height: 80%; display: flex; flex-direction: column; align-items: flex-start; /* Left Align */ justify-content: center;
+            z-index: 10; box-sizing: border-box; text-align: left; background-color: rgba(0, 0, 0, 0.6);
+            padding: 20px; border-radius: 10px;
+        }
+        .style6-headline-text { text-transform: uppercase; color: white; text-align: left; line-height: 1.1; word-break: break-word; text-shadow: 2px 2px 6px rgba(0, 0, 0, 0.9); margin-bottom: 10px; width: 100%; }
+        .style6-emphasized-text-container { background-color: #dc2626; padding: 8px 12px; margin: 5px 0; /* Align left */ display: inline-block; border-radius: 4px; white-space: normal; }
+        .style6-emphasized-text { text-transform: uppercase; color: white; text-align: left; line-height: 1.1; word-break: break-word; text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.5); display: block; width: 100%; }
+        .style6-details-text { text-transform: none; text-align: left; font-size: 1rem; margin-top: 10px; line-height: 1.3; color: white; text-shadow: 1px 1px 3px rgba(0,0,0,0.8); width: 100%; }
+        .style6-branding-text { top: 20px; right: 20px; bottom: unset; left: unset; }
 
-        /* Style 3: Side Bar Headline (Left) */
-        #style3Preview .text-overlay {
-            position: absolute;
-            top: 0;
-            bottom: 0;
-            left: 0;
-            width: 40%; /* Wider side bar */
-            background-color: rgba(0, 0, 0, 0.9);
-            padding: 20px;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            justify-content: center;
-            color: white;
-            z-index: 10;
-            box-sizing: border-box;
-            text-align: center; /* Center text within the bar */
-        }
-        #style3Preview .headline-text {
-            text-transform: uppercase;
-            line-height: 1.1;
-            word-break: break-word;
-            text-shadow: 2px 2px 6px rgba(0, 0, 0, 0.9);
-            margin-bottom: 10px;
-        }
-        #style3Preview .details-text {
-            line-height: 1.2;
-            word-break: break-word;
-            text-shadow: 1px 1px 3px rgba(0, 0, 0, 0.8);
-        }
-        /* Style 3 Specific Branding Position: Top Right */
-        #style3Preview .branding-text {
-            top: 20px;
-            right: 20px;
-            bottom: unset;
-            left: unset;
-        }
+        /* Style 7 */
+        .style7-top-half { background-color: #1f2937; flex: 0 0 30%; display: flex; flex-direction: column; align-items: flex-start; /* Left Align */ justify-content: center; padding: 20px; box-sizing: border-box; color: white; }
+        .style7-bottom-half { flex-grow: 1; position: relative; }
+        .style7-headline-text { text-transform: uppercase; text-align: left; line-height: 1.1; word-break: break-word; text-shadow: 1px 1px 3px rgba(0, 0, 0, 0.7); margin-bottom: 10px; width: 100%; }
+        .style7-details-text { text-align: left; line-height: 1.2; word-break: break-word; text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.5); font-size: 1.25rem; width: 100%; }
+        .style7-branding-text { bottom: 20px; right: 20px; top: unset; left: unset; position: absolute; }
 
-        /* Style 4: Central Transparent Overlay */
-        #style4Preview .text-overlay {
-            position: absolute;
-            top: 50%;
-            left: 50%;
-            transform: translate(-50%, -50%);
-            width: 90%;
-            max-height: 80%; /* Limit height to prevent full cover */
-            background-color: rgba(0, 0, 0, 0.6); /* More transparent */
-            padding: 30px;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            justify-content: center;
-            color: white;
-            z-index: 10;
-            box-sizing: border-box;
-            border-radius: 10px;
-            text-align: center;
-            overflow: hidden; /* Hide overflow for details text */
-        }
-        #style4Preview .headline-text {
-            text-transform: uppercase;
-            line-height: 1.1;
-            word-break: break-word;
-            text-shadow: 2px 2px 6px rgba(0, 0, 0, 0.9);
-            margin-bottom: 15px;
-        }
-        #style4Preview .details-text {
-            line-height: 1.2;
-            word-break: break-word;
-            text-shadow: 1px 1px 3px rgba(0, 0, 0, 0.8);
-            max-height: 50%; /* Limit details text height */
-            overflow: hidden;
-        }
-        /* Style 4 Specific Branding Position: Top Left */
-        #style4Preview .branding-text {
-            top: 20px;
-            left: 20px;
-            bottom: unset;
-            right: unset;
-        }
+        /* Style 8 */
+        .style8-left-panel { background-color: #1a202c; flex: 0 0 40%; display: flex; flex-direction: column; align-items: flex-start; /* Left Align */ justify-content: center; padding: 20px; box-sizing: border-box; color: white; text-align: left; }
+        .style8-right-panel { flex-grow: 1; position: relative; }
+        .style8-headline-text { text-transform: uppercase; text-align: left; line-height: 1.1; word-break: break-word; text-shadow: 1px 1px 3px rgba(0, 0, 0, 0.7); margin-bottom: 15px; width: 100%; }
+        .style8-details-text { text-align: left; line-height: 1.2; word-break: break-word; text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.5); font-size: 1.25rem; width: 100%; }
+        .style8-branding-text { top: 20px; right: 20px; bottom: unset; left: unset; position: absolute; }
+
 
         /* General button styling */
         button {
@@ -265,7 +187,13 @@
         #downloadBtn {
             background-image: linear-gradient(to right, #00b09b 0%, #96c93d 100%);
             color: white;
-            display: none; /* Hide until image is generated */
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+        #downloadBtn:not([disabled]):hover {
+            background-image: linear-gradient(to right, #00c0ab 0%, #a6d94d 100%);
+            opacity: 1;
+            cursor: pointer;
         }
         #clearBtn {
             background-image: linear-gradient(to right, #eb3941 0%, #f15e64 100%);
@@ -310,11 +238,9 @@
 
         /* Responsive adjustments for smaller screens */
         @media (max-width: 900px) {
-            .news-post-preview {
-                width: 100%; /* Full width on small screens */
-                height: auto; /* Adjust height dynamically */
-                aspect-ratio: 3 / 4; /* Maintain aspect ratio */
-                padding: 15px;
+            .render-target { /* Adjust target for smaller screens if needed for rendering accuracy */
+                width: 450px; /* Example: 3:4 ratio at smaller size */
+                height: 600px;
             }
 
             .branding-text {
@@ -322,33 +248,41 @@
                 padding: 3px 8px; /* Smaller padding on mobile */
             }
 
-            #style1Preview .branding-text { top: 15px; right: 15px; }
-            #style2Preview .branding-text { bottom: 15px; right: 15px; }
-            #style3Preview .branding-text { top: 15px; right: 15px; }
-            #style4Preview .branding-text { top: 15px; left: 15px; }
+            /* Adjust dynamic branding positions for mobile if necessary */
+            .style1-branding-text { top: 15px; right: 15px; }
+            .style2-branding-text { bottom: 15px; right: 15px; }
+            .style3-branding-text { top: 15px; right: 15px; }
+            .style4-branding-text { top: 15px; left: 15px; }
+            .style5-branding-text { top: 15px; right: 15px; }
+            .style7-branding-text { bottom: 15px; right: 15px; }
+            .style8-branding-text { top: 15px; right: 15px; }
 
+            /* Text sizing for dynamic elements on smaller screens */
+            .style1-headline-text { font-size: 32px; }
+            .style1-details-text { font-size: 0.8rem; }
+            .style2-headline-text { font-size: 32px; }
+            .style2-details-text { font-size: 0.9rem; }
+            .style3-headline-text { font-size: 32px; }
+            .style3-details-text { font-size: 0.9rem; }
+            .style4-headline-text { font-size: 32px; }
+            .style4-details-text { font-size: 0.9rem; }
+            .style5-top-section { padding: 15px; }
+            .style5-headline-text { font-size: 32px; }
+            .style5-emphasized-text { font-size: 24px; }
+            .style5-details-text { font-size: 0.9rem; }
+            .style5-main-image-section { padding: 10px; }
+            .style5-bottom-footer { font-size: 1rem; padding: 10px 15px; }
+            .style6-headline-text { font-size: 32px; }
+            .style6-emphasized-text { font-size: 24px; }
+            .style6-details-text { font-size: 0.9rem; }
+            .style7-top-half { padding: 15px; }
+            .style7-headline-text { font-size: 32px; }
+            .style7-details-text { font-size: 1rem; }
+            .style8-left-panel { flex: 0 0 100%; height: auto; padding: 15px; }
+            .style8-right-panel { flex: 0 0 100%; height: 400px; }
+            .style8-headline-text { font-size: 32px; }
+            .style8-details-text { font-size: 1rem; }
 
-            #style1Preview .text-overlay {
-                padding: 15px;
-            }
-
-            #style1Preview .headline-text {
-                font-size: 32px; /* Base for mobile */
-            }
-            #style1Preview .details-text {
-                font-size: 0.8rem;
-            }
-
-            #style2Preview .text-overlay {
-                padding: 15px;
-            }
-            #style3Preview .text-overlay {
-                width: 50%; /* Wider side bar on mobile */
-                padding: 15px;
-            }
-            #style4Preview .text-overlay {
-                padding: 20px;
-            }
 
             #appContainer {
                 flex-direction: column;
@@ -356,13 +290,13 @@
                 width: 100%;
             }
 
-            .input-section, .preview-section, .output-section {
-                width: 100%;
-                max-width: 500px; /* Limit width of sections for better readability */
-            }
-
             textarea {
                 min-height: 80px;
+            }
+
+            .radio-group label {
+                padding: 8px 12px;
+                font-size: 0.9rem;
             }
         }
     </style>
@@ -378,12 +312,14 @@
                 <label for="headlineInput" class="block text-gray-700 text-lg font-semibold mb-2">Headline (Capitalized)</label>
                 <textarea id="headlineInput" class="w-full p-4 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 font-bebas text-2xl" rows="3" placeholder="YOUR HEADLINE HERE" maxlength="150"></textarea>
                 <p class="text-sm text-gray-500 mt-1">Headline will be automatically capitalized and sized.</p>
+                <button id="generateHeadlineBtn" class="mt-2 bg-purple-500 hover:bg-purple-600 text-white font-bold py-2 px-4 rounded-md shadow-md transition duration-300 ease-in-out">✨ Generate Headline Suggestion</button>
             </div>
 
             <div>
-                <label for="detailsInput" class="block text-gray-700 text-lg font-semibold mb-2">Little Details News (Optional)</label>
-                <textarea id="detailsInput" class="w-full p-4 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 font-bebas text-lg" rows="5" placeholder="Add some supporting details or source..." maxlength="300"></textarea>
-                <p class="text-sm text-gray-500 mt-1">Details will adjust size based on content length.</p>
+                <label for="detailsInput" class="block text-gray-700 text-lg font-semibold mb-2">Little Details News / Emphasized Text (Optional)</label>
+                <textarea id="detailsInput" class="w-full p-4 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 font-bebas text-lg" rows="5" placeholder="Add some supporting details, emphasized text, or source..." maxlength="300"></textarea>
+                <p class="text-sm text-gray-500 mt-1">Text will adjust size based on content length. For some styles, this will be the emphasized red text.</p>
+                <button id="summarizeDetailsBtn" class="mt-2 bg-indigo-500 hover:bg-indigo-600 text-white font-bold py-2 px-4 rounded-md shadow-md transition duration-300 ease-in-out">✨ Summarize Details</button>
             </div>
 
             <div>
@@ -401,7 +337,7 @@
                 <div class="radio-group">
                     <label>
                         <input type="radio" name="postStyle" value="style1" checked>
-                        <span>Style 1: Perfect Copy</span> <i class="fa-solid fa-rectangle-list ml-2"></i>
+                        <span>Style 1: Copy-Cat</span> <i class="fa-solid fa-rectangle-list ml-2"></i>
                     </label>
                     <label>
                         <input type="radio" name="postStyle" value="style2">
@@ -415,6 +351,22 @@
                         <input type="radio" name="postStyle" value="style4">
                         <span>Style 4: Central Overlay</span> <i class="fa-solid fa-layer-group ml-2"></i>
                     </label>
+                     <label>
+                        <input type="radio" name="postStyle" value="style5">
+                        <span>Style 5: Multi-Section</span> <i class="fa-solid fa-columns ml-2"></i>
+                    </label>
+                    <label>
+                        <input type="radio" name="postStyle" value="style6">
+                        <span>Style 6: Emph. Central</span> <i class="fa-solid fa-bullhorn ml-2"></i>
+                    </label>
+                    <label>
+                        <input type="radio" name="postStyle" value="style7">
+                        <span>Style 7: Two-Tone</span> <i class="fa-solid fa-palette ml-2"></i>
+                    </label>
+                    <label>
+                        <input type="radio" name="postStyle" value="style8">
+                        <span>Style 8: Vertical Panel</span> <i class="fa-solid fa-grip-vertical ml-2"></i>
+                    </label>
                 </div>
             </div>
 
@@ -424,56 +376,11 @@
             </div>
         </div>
 
-        <!-- Preview Section -->
-        <div class="preview-section flex flex-col w-full lg:w-1/2 items-center justify-center relative p-4">
-            <h2 class="text-2xl font-bold text-gray-800 mb-4">Live Preview</h2>
-
-            <!-- Style 1 Preview: Perfect Copy -->
-            <div id="style1Preview" class="news-post-preview active">
-                <img class="post-image" src="https://placehold.co/600x800/A0A0A0/FFFFFF?text=Upload+Image" alt="Background Image">
-                <div class="text-overlay">
-                    <p class="font-bebas headline-text text-5xl md:text-6xl lg:text-7xl xl:text-8xl"></p>
-                    <p class="font-bebas details-text"></p>
-                </div>
-                <div class="font-bebas branding-text">vikramadity.com</div>
-            </div>
-
-            <!-- Style 2 Preview: Top Bar Headline -->
-            <div id="style2Preview" class="news-post-preview">
-                <img class="post-image" src="https://placehold.co/600x800/A0A0A0/FFFFFF?text=Upload+Image" alt="Background Image">
-                <div class="text-overlay">
-                    <p class="font-bebas headline-text text-5xl md:text-6xl lg:text-7xl xl:text-8xl"></p>
-                    <p class="font-bebas details-text text-lg md:text-xl lg:text-2xl"></p>
-                </div>
-                <div class="font-bebas branding-text">vikramadity.com</div>
-            </div>
-
-            <!-- Style 3 Preview: Side Bar Headline (Left) -->
-            <div id="style3Preview" class="news-post-preview">
-                <img class="post-image" src="https://placehold.co/600x800/A0A0A0/FFFFFF?text=Upload+Image" alt="Background Image">
-                <div class="text-overlay">
-                    <p class="font-bebas headline-text text-5xl md:text-6xl lg:text-7xl xl:text-8xl"></p>
-                    <p class="font-bebas details-text text-lg md:text-xl lg:text-2xl"></p>
-                </div>
-                <div class="font-bebas branding-text">vikramadity.com</div>
-            </div>
-
-            <!-- Style 4 Preview: Central Transparent Overlay -->
-            <div id="style4Preview" class="news-post-preview">
-                <img class="post-image" src="https://placehold.co/600x800/A0A0A0/FFFFFF?text=Upload+Image" alt="Background Image">
-                <div class="text-overlay">
-                    <p class="font-bebas headline-text text-5xl md:text-6xl lg:text-7xl xl:text-8xl"></p>
-                    <p class="font-bebas details-text text-lg md:text-xl lg:text-2xl"></p>
-                </div>
-                <div class="font-bebas branding-text">vikramadity.com</div>
-            </div>
-
-            <!-- Output Section -->
-            <div id="outputSection" class="output-section flex flex-col items-center mt-8 w-full">
-                <h2 class="text-2xl font-bold text-gray-800 mb-4 hidden" id="outputTitle">Generated Image</h2>
-                <img id="generatedImage" class="hidden max-w-full h-auto border border-gray-300 rounded-lg shadow-md mb-4" alt="Generated News Post">
-                <button id="downloadBtn" class="bg-gradient-to-r from-green-500 to-emerald-600 hover:from-green-600 hover:to-emerald-700 text-white font-bold py-3 px-6 rounded-lg shadow-lg transform transition duration-300 hover:scale-105">Download Image</button>
-            </div>
+        <!-- Output Section: This section becomes visible AFTER clicking "Generate Image Post" -->
+        <div id="outputSection" class="output-section flex flex-col w-full lg:w-1/2 items-center justify-center relative p-4">
+            <h2 class="text-2xl font-bold text-gray-800 mb-4 hidden" id="outputTitle">Generated Image</h2>
+            <img id="generatedImage" class="hidden max-w-full h-auto border border-gray-300 rounded-lg shadow-md mb-4" alt="Generated News Post">
+            <button id="downloadBtn" disabled class="bg-gradient-to-r from-green-500 to-emerald-600 hover:from-green-600 hover:to-emerald-700 text-white font-bold py-3 px-6 rounded-lg shadow-lg transform transition duration-300 hover:scale-105">Download Image</button>
         </div>
     </div>
 
@@ -491,247 +398,402 @@
         const clearBtn = document.getElementById('clearBtn');
         const styleRadios = document.querySelectorAll('input[name="postStyle"]');
 
+        const generateHeadlineBtn = document.getElementById('generateHeadlineBtn');
+        const summarizeDetailsBtn = document.getElementById('summarizeDetailsBtn');
+
         const generatedImage = document.getElementById('generatedImage');
         const outputTitle = document.getElementById('outputTitle');
 
-        const previews = {
-            style1: {
-                element: document.getElementById('style1Preview'),
-                headlineText: document.querySelector('#style1Preview .headline-text'),
-                detailsText: document.querySelector('#style1Preview .details-text'),
-                postImage: document.querySelector('#style1Preview .post-image'),
-                brandingText: document.querySelector('#style1Preview .branding-text')
-            },
-            style2: {
-                element: document.getElementById('style2Preview'),
-                headlineText: document.querySelector('#style2Preview .headline-text'),
-                detailsText: document.querySelector('#style2Preview .details-text'),
-                postImage: document.querySelector('#style2Preview .post-image'),
-                brandingText: document.querySelector('#style2Preview .branding-text')
-            },
-            style3: {
-                element: document.getElementById('style3Preview'),
-                headlineText: document.querySelector('#style3Preview .headline-text'),
-                detailsText: document.querySelector('#style3Preview .details-text'),
-                postImage: document.querySelector('#style3Preview .post-image'),
-                brandingText: document.querySelector('#style3Preview .branding-text')
-            },
-            style4: {
-                element: document.getElementById('style4Preview'),
-                headlineText: document.querySelector('#style4Preview .headline-text'),
-                detailsText: document.querySelector('#style4Preview .details-text'),
-                postImage: document.querySelector('#style4Preview .post-image'),
-                brandingText: document.querySelector('#style4Preview .branding-text')
-            }
-        };
-
-        let currentStyle = 'style1'; // Default active style
+        let currentStyle = 'style1'; // Default active style on load
 
         // Function to dynamically adjust font size based on content length
-        function adjustFontSize(element, text, isHeadline = false, styleId) {
+        // This function needs to return the font size as a string (e.g., '60px')
+        function getAdjustedFontSize(text, type, styleId) {
             let fontSize;
             const textLength = text.length;
 
-            if (isHeadline) {
-                if (styleId === 'style1') { // Perfect copy style has a very large headline
-                    if (textLength <= 20) {
-                        fontSize = '60px';
-                    } else if (textLength <= 40) {
-                        fontSize = '48px';
-                    } else if (textLength <= 70) {
-                        fontSize = '36px';
-                    } else {
-                        fontSize = '28px'; // For very long headlines in style1
-                    }
-                } else if (styleId === 'style3') { // Side bar might need smaller font for height
-                     if (textLength <= 20) {
-                        fontSize = '48px';
-                    } else if (textLength <= 40) {
-                        fontSize = '36px';
-                    } else if (textLength <= 70) {
-                        fontSize = '28px';
-                    } else {
-                        fontSize = '24px';
-                    }
-                }
-                else { // Other styles
-                    if (textLength <= 15) {
-                        fontSize = '64px';
-                    } else if (textLength <= 30) {
-                        fontSize = '48px';
-                    } else if (textLength <= 50) {
-                        fontSize = '36px';
-                    } else {
-                        fontSize = '28px';
-                    }
-                }
-            } else { // Details text
-                if (textLength === 0) {
-                    element.classList.add('hidden'); // Hide if no details
-                    return;
-                } else {
-                    element.classList.remove('hidden');
-                }
-
-                if (styleId === 'style1') { // Style 1 details are very small source text
-                    fontSize = '16px';
-                    if (textLength > 50) { fontSize = '14px'; }
-                } else if (styleId === 'style3') { // Side bar details
-                    if (textLength <= 50) {
-                        fontSize = '18px';
-                    } else if (textLength <= 150) {
-                        fontSize = '16px';
-                    } else {
-                        fontSize = '14px';
-                    }
-                }
-                else { // Other styles details
-                    if (textLength <= 50) {
-                        fontSize = '24px';
-                    } else if (textLength <= 100) {
-                        fontSize = '20px';
-                    } else if (textLength <= 200) {
-                        fontSize = '18px';
-                    } else {
-                        fontSize = '16px';
-                    }
-                }
-            }
-            element.style.fontSize = fontSize;
-        }
-
-        // Update all active preview elements
-        function updatePreviews() {
-            const headline = headlineInput.value.toUpperCase();
-            const details = detailsInput.value;
-            const bgImageUrl = imageUpload.files[0] ? URL.createObjectURL(imageUpload.files[0]) : "https://placehold.co/600x800/A0A0A0/FFFFFF?text=Upload+Image";
-
-            for (const styleId in previews) {
-                const p = previews[styleId];
-                p.headlineText.textContent = headline;
-                p.detailsText.textContent = details;
-                p.postImage.src = bgImageUrl;
-                p.brandingText.textContent = 'vikramadity.com'; // Set the branding text
-
-                // Adjust font sizes for each style
-                adjustFontSize(p.headlineText, headline, true, styleId);
-                adjustFontSize(p.detailsText, details, false, styleId);
-
-                // For Style 1, if details are empty, hide the details text element but keep the overlay visible
+            if (type === 'headline') {
                 if (styleId === 'style1') {
-                    if (details.length === 0) {
-                        p.detailsText.classList.add('hidden');
-                    } else {
-                        p.detailsText.classList.remove('hidden');
-                    }
+                    if (textLength <= 20) { return '60px'; }
+                    else if (textLength <= 40) { return '48px'; }
+                    else if (textLength <= 70) { return '36px'; }
+                    else { return '28px'; }
+                } else if (styleId === 'style3') {
+                     if (textLength <= 20) { return '48px'; }
+                    else if (textLength <= 40) { return '36px'; }
+                    else if (textLength <= 70) { return '28px'; }
+                    else { return '24px'; }
+                } else if (styleId === 'style5') {
+                    if (textLength <= 30) { return '48px'; }
+                    else if (textLength <= 60) { return '36px'; }
+                    else { return '28px'; }
+                } else if (styleId === 'style6') {
+                    if (textLength <= 25) { return '48px'; }
+                    else if (textLength <= 50) { return '36px'; }
+                    else { return '28px'; }
+                } else if (styleId === 'style7' || styleId === 'style8') {
+                    if (textLength <= 30) { return '48px'; }
+                    else if (textLength <= 60) { return '36px'; }
+                    else { return '28px'; }
+                }
+                else { // Default for styles 2, 4
+                    if (textLength <= 15) { return '64px'; }
+                    else if (textLength <= 30) { return '48px'; }
+                    else if (textLength <= 50) { return '36px'; }
+                    else { return '28px'; }
+                }
+            } else if (type === 'details') {
+                if (textLength === 0) { return '0px'; } // Indicate hidden if no text
+
+                if (styleId === 'style1') {
+                    if (textLength > 50) { return '14px'; }
+                    return '16px';
+                } else if (styleId === 'style3') {
+                    if (textLength <= 50) { return '18px'; }
+                    else if (textLength <= 150) { return '16px'; }
+                    else { return '14px'; }
+                } else if (styleId === 'style5' || styleId === 'style6') {
+                    if (textLength <= 30) { return '36px'; }
+                    else if (textLength <= 60) { return '28px'; }
+                    else { return '24px'; }
+                } else if (styleId === 'style7' || styleId === 'style8') {
+                    if (textLength <= 50) { return '24px'; }
+                    else if (textLength <= 100) { return '20px'; }
+                    else if (textLength <= 200) { return '18px'; }
+                    else { return '16px'; }
+                }
+                else { // Default for styles 2, 4
+                    if (textLength <= 50) { return '24px'; }
+                    else if (textLength <= 100) { return '20px'; }
+                    else if (textLength <= 200) { return '18px'; }
+                    else { return '16px'; }
                 }
             }
+            return '16px'; // Default fallback
         }
 
-        // Live update for headline input
-        headlineInput.addEventListener('input', updatePreviews);
+        // This function will build the HTML structure for the selected style
+        // in a detached DOM element, which html2canvas will then render.
+        function buildRenderTargetHTML(styleId, headlineText, detailsText, imageUrl) {
+            const renderTarget = document.createElement('div');
+            renderTarget.className = `render-target`; // Base class for off-screen rendering
+            renderTarget.style.display = 'flex'; // Ensure it's rendered for html2canvas
+            // These properties are crucial for html2canvas to render correctly
+            renderTarget.style.width = '600px';
+            renderTarget.style.height = '800px';
+            renderTarget.style.position = 'absolute'; // Position off-screen
+            renderTarget.style.left = '-9999px';
+            renderTarget.style.top = '-9999px';
+            renderTarget.style.overflow = 'hidden';
+            renderTarget.style.borderRadius = '12px';
+            renderTarget.style.boxSizing = 'border-box';
 
-        // Live update for details input
-        detailsInput.addEventListener('input', updatePreviews);
 
-        // Handle background image upload and preview
+            const imageElement = `<img class="post-image" src="${imageUrl}" alt="Background Image">`;
+            const brandingElement = `<div class="font-bebas branding-text">vikramaditya.com</div>`;
+
+            const headlineFontSize = getAdjustedFontSize(headlineText, 'headline', styleId);
+            const detailsFontSize = getAdjustedFontSize(detailsText, 'details', styleId);
+            const detailsDisplay = (detailsText.length === 0) ? 'none' : 'block';
+
+            if (styleId === 'style1') {
+                renderTarget.style.flexDirection = 'column'; // Ensure correct flex direction for html2canvas
+                renderTarget.style.justifyContent = 'space-between';
+                renderTarget.innerHTML = `
+                    ${imageElement}
+                    <div class="style1-text-overlay">
+                        <p class="font-bebas style1-headline-text" style="font-size: ${headlineFontSize};">${headlineText}</p>
+                        <p class="font-bebas style1-details-text" style="font-size: ${detailsFontSize}; display: ${detailsDisplay};">${detailsText}</p>
+                    </div>
+                    <div class="font-bebas branding-text style1-branding-text">vikramaditya.com</div>
+                `;
+            } else if (styleId === 'style2') {
+                renderTarget.style.flexDirection = 'column';
+                renderTarget.style.justifyContent = 'space-between';
+                renderTarget.innerHTML = `
+                    ${imageElement}
+                    <div class="style2-text-overlay">
+                        <p class="font-bebas style2-headline-text" style="font-size: ${headlineFontSize};">${headlineText}</p>
+                        <p class="font-bebas style2-details-text" style="font-size: ${detailsFontSize}; display: ${detailsDisplay};">${detailsText}</p>
+                    </div>
+                    <div class="font-bebas branding-text style2-branding-text">vikramaditya.com</div>
+                `;
+            } else if (styleId === 'style3') {
+                 renderTarget.style.flexDirection = 'row'; /* For side by side layout */
+                 renderTarget.innerHTML = `
+                    <div class="style3-text-overlay">
+                        <p class="font-bebas style3-headline-text" style="font-size: ${headlineFontSize};">${headlineText}</p>
+                        <p class="font-bebas style3-details-text" style="font-size: ${detailsFontSize}; display: ${detailsDisplay};">${detailsText}</p>
+                    </div>
+                    <div class="style3-right-panel" style="flex-grow: 1; position: relative;">${imageElement}</div>
+                    <div class="font-bebas branding-text style3-branding-text">vikramaditya.com</div>
+                `;
+            } else if (styleId === 'style4') {
+                renderTarget.style.flexDirection = 'column';
+                renderTarget.style.justifyContent = 'space-between';
+                renderTarget.innerHTML = `
+                    ${imageElement}
+                    <div class="style4-text-overlay">
+                        <p class="font-bebas style4-headline-text" style="font-size: ${headlineFontSize};">${headlineText}</p>
+                        <p class="font-bebas style4-details-text" style="font-size: ${detailsFontSize}; display: ${detailsDisplay};">${detailsText}</p>
+                    </div>
+                    <div class="font-bebas branding-text style4-branding-text">vikramaditya.com</div>
+                `;
+            } else if (styleId === 'style5') {
+                 // Style 5: Multi-Section (Inspired by provided image)
+                const emphasizedTextDisplay = (detailsText.length === 0) ? 'none' : 'inline-block';
+                const emphasizedFontSize = getAdjustedFontSize(detailsText, 'details', styleId);
+
+                renderTarget.style.backgroundColor = '#1a202c'; // Apply background to root
+                renderTarget.style.flexDirection = 'column';
+                renderTarget.style.justifyContent = 'space-between';
+
+                renderTarget.innerHTML = `
+                    <div class="style5-top-section">
+                        <p class="font-bebas style5-headline-text" style="font-size: ${headlineFontSize};">${headlineText}</p>
+                        <div class="style5-emphasized-text-container" style="display: ${emphasizedTextDisplay};">
+                            <p class="font-bebas style5-emphasized-text" style="font-size: ${emphasizedFontSize};">${detailsText}</p>
+                        </div>
+                        <p class="font-bebas style5-details-text" style="display: none;"></p> <!-- Kept for structure, not used by primary details -->
+                    </div>
+                    <div class="style5-main-image-section">
+                        <div class="style5-image-frame">
+                            <img class="style5-post-image-inside-frame" src="${imageUrl}" alt="Main Visual">
+                        </div>
+                    </div>
+                    <div class="style5-bottom-footer">
+                        <p class="font-bebas style5-footer-branding">vikramaditya.com</p>
+                    </div>
+                    <div class="font-bebas branding-text style5-branding-text">vikramaditya.com</div>
+                `;
+            } else if (styleId === 'style6') {
+                // Style 6: Emphasized Line Central
+                const emphasizedTextDisplay = (detailsText.length === 0) ? 'none' : 'inline-block';
+                const emphasizedFontSize = getAdjustedFontSize(detailsText, 'details', styleId);
+
+                renderTarget.style.flexDirection = 'column';
+                renderTarget.style.justifyContent = 'space-between';
+                renderTarget.innerHTML = `
+                    ${imageElement}
+                    <div class="style6-text-overlay">
+                        <p class="font-bebas style6-headline-text" style="font-size: ${headlineFontSize};">${headlineText}</p>
+                        <div class="style6-emphasized-text-container" style="display: ${emphasizedTextDisplay};">
+                            <p class="font-bebas style6-emphasized-text" style="font-size: ${emphasizedFontSize};">${detailsText}</p>
+                        </div>
+                        <p class="font-bebas style6-details-text" style="display: none;"></p>
+                    </div>
+                    <div class="font-bebas branding-text style6-branding-text">vikramaditya.com</div>
+                `;
+            } else if (styleId === 'style7') {
+                // Style 7: Two-Tone Background with Headline & Details
+                renderTarget.style.flexDirection = 'column'; // Explicitly column layout
+                renderTarget.innerHTML = `
+                    <div class="style7-top-half">
+                        <p class="font-bebas style7-headline-text" style="font-size: ${headlineFontSize};">${headlineText}</p>
+                        <p class="font-bebas style7-details-text" style="font-size: ${detailsFontSize}; display: ${detailsDisplay};">${detailsText}</p>
+                    </div>
+                    <div class="style7-bottom-half">
+                        <img class="post-image" src="${imageUrl}" alt="Background Image" style="width: 100%; height: 100%; object-fit: cover;">
+                    </div>
+                    <div class="font-bebas branding-text style7-branding-text">vikramaditya.com</div>
+                `;
+            } else if (styleId === 'style8') {
+                // Style 8: Vertical Split with Headline & Image
+                renderTarget.style.flexDirection = 'row'; // Explicitly row layout
+                renderTarget.innerHTML = `
+                    <div class="style8-left-panel">
+                        <p class="font-bebas style8-headline-text" style="font-size: ${headlineFontSize};">${headlineText}</p>
+                        <p class="font-bebas style8-details-text" style="font-size: ${detailsFontSize}; display: ${detailsDisplay};">${detailsText}</p>
+                    </div>
+                    <div class="style8-right-panel">
+                        <img class="post-image" src="${imageUrl}" alt="Background Image" style="width: 100%; height: 100%; object-fit: cover;">
+                    </div>
+                    <div class="font-bebas branding-text style8-branding-text">vikramaditya.com</div>
+                `;
+            }
+
+            return renderTarget;
+        }
+
+        // Event listener for headline input changes (no direct visual update on screen)
+        headlineInput.addEventListener('input', () => {
+            // No need to update anything visible until generate button is clicked
+        });
+
+        // Event listener for details input changes (no direct visual update on screen)
+        detailsInput.addEventListener('input', () => {
+            // No need to update anything visible until generate button is clicked
+        });
+
+        // Handle background image upload changes (no direct visual update on screen)
         imageUpload.addEventListener('change', (event) => {
             const file = event.target.files[0];
             if (file) {
                 fileNameSpan.textContent = `Selected: ${file.name}`;
-                updatePreviews(); // Update all previews with the new image
             } else {
                 fileNameSpan.textContent = '';
-                // Revoke old URL if it exists to free memory
-                for (const styleId in previews) {
-                    if (previews[styleId].postImage.src.startsWith('blob:')) {
-                        URL.revokeObjectURL(previews[styleId].postImage.src);
-                    }
-                }
-                updatePreviews(); // Update with placeholder
             }
+            // No need to update previews, as there are none visible
         });
 
-        // Handle style selection
+        // Event listener for style selection (radio buttons)
         styleRadios.forEach(radio => {
             radio.addEventListener('change', (event) => {
                 currentStyle = event.target.value;
-                for (const styleId in previews) {
-                    if (styleId === currentStyle) {
-                        previews[styleId].element.classList.add('active');
-                    } else {
-                        previews[styleId].element.classList.remove('active');
-                    }
-                }
+                // No need to update previews, as there are none visible
             });
         });
 
-        // Generate Image Button Click
-        generateBtn.addEventListener('click', () => {
-            const activePreview = previews[currentStyle].element;
+        // Event listener for "Generate Headline Suggestion" button
+        generateHeadlineBtn.addEventListener('click', async () => {
+            generateHeadlineBtn.disabled = true;
+            generateHeadlineBtn.textContent = 'Generating...';
 
-            html2canvas(activePreview, {
+            const prompt = detailsInput.value.trim() !== ''
+                ? `Generate a catchy news headline based on the following news details (keep it concise, around 10-15 words, and in all caps): "${detailsInput.value}"`
+                : "Generate a catchy and impactful news headline (all caps, around 10-15 words).";
+
+            try {
+                let chatHistory = [];
+                chatHistory.push({ role: "user", parts: [{ text: prompt }] });
+                const payload = { contents: chatHistory };
+                const apiKey = "";
+                const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${apiKey}`;
+
+                const response = await fetch(apiUrl, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(payload)
+                });
+
+                const result = await response.json();
+                if (result.candidates && result.candidates.length > 0 &&
+                    result.candidates[0].content && result.candidates[0].content.parts &&
+                    result.candidates[0].content.parts.length > 0) {
+                    const text = result.candidates[0].content.parts[0].text;
+                    headlineInput.value = text.toUpperCase().replace(/[\*\_\`]/g, '');
+                } else {
+                    console.error("Gemini API response structure unexpected:", result);
+                    alert("Could not generate headline. Please try again.");
+                }
+            } catch (error) {
+                console.error("Error calling Gemini API for headline:", error);
+                alert("Error generating headline. Please check your network or try again later.");
+            } finally {
+                generateHeadlineBtn.disabled = false;
+                generateHeadlineBtn.textContent = '✨ Generate Headline Suggestion';
+            }
+        });
+
+        // Event listener for "Summarize Details" button
+        summarizeDetailsBtn.addEventListener('click', async () => {
+            if (detailsInput.value.trim() === '') {
+                alert("Please enter some details to summarize.");
+                return;
+            }
+
+            summarizeDetailsBtn.disabled = true;
+            summarizeDetailsBtn.textContent = 'Summarizing...';
+
+            const prompt = `Summarize the following news details concisely, focusing on the main points (keep it under 100 words): "${detailsInput.value}"`;
+
+            try {
+                let chatHistory = [];
+                chatHistory.push({ role: "user", parts: [{ text: prompt }] });
+                const payload = { contents: chatHistory };
+                const apiKey = "";
+                const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${apiKey}`;
+
+                const response = await fetch(apiUrl, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(payload)
+                });
+
+                const result = await response.json();
+                if (result.candidates && result.candidates.length > 0 &&
+                    result.candidates[0].content && result.candidates[0].content.parts &&
+                    result.candidates[0].content.parts.length > 0) {
+                    const text = result.candidates[0].content.parts[0].text;
+                    detailsInput.value = text.replace(/[\*\_\`]/g, '');
+                } else {
+                    console.error("Gemini API response structure unexpected:", result);
+                    alert("Could not summarize details. Please try again.");
+                }
+            } catch (error) {
+                console.error("Error calling Gemini API for summary:", error);
+                alert("Error summarizing details. Please check your network or try again later.");
+            } finally {
+                summarizeDetailsBtn.disabled = false;
+                summarizeDetailsBtn.textContent = '✨ Summarize Details';
+            }
+        });
+
+
+        // Event listener for "Generate Image Post" button click
+        generateBtn.addEventListener('click', () => {
+            // Get current input values
+            const headline = headlineInput.value.toUpperCase();
+            const details = detailsInput.value;
+            const bgImageUrl = imageUpload.files[0] ? URL.createObjectURL(imageUpload.files[0]) : "https://placehold.co/600x800/A0A0A0/FFFFFF?text=Upload+Image";
+
+            // Build the off-screen render target
+            const renderTarget = buildRenderTargetHTML(currentStyle, headline, details, bgImageUrl);
+            document.body.appendChild(renderTarget); // Temporarily add to DOM for html2canvas
+
+            // Use html2canvas to capture the off-screen element
+            html2canvas(renderTarget, {
                 useCORS: true,
-                scale: 3, // Increased scale for higher resolution output image (e.g., 600px * 3 = 1800px width)
-                allowTaint: true, // Allow tainted canvases for cross-origin images (e.g., placeholder)
-                logging: false, // Disable logging for cleaner console
+                scale: 3,
+                allowTaint: true,
+                logging: false,
             }).then(canvas => {
                 const imgUrl = canvas.toDataURL('image/png');
                 generatedImage.src = imgUrl;
-                generatedImage.classList.remove('hidden');
-                downloadBtn.classList.remove('hidden');
-                outputTitle.classList.remove('hidden');
+                generatedImage.classList.remove('hidden'); // Show the generated image
 
-                // Set download link properties
+                downloadBtn.disabled = false; // Enable download button
+                downloadBtn.style.opacity = 1;
+                downloadBtn.style.cursor = 'pointer';
+
+                outputTitle.classList.remove('hidden'); // Show title
+
                 downloadBtn.href = imgUrl;
                 downloadBtn.download = `news_post_${currentStyle}.png`;
             }).catch(error => {
                 console.error("Oops, something went wrong while generating the image:", error);
-                alert("Could not generate image. Please ensure all images are loaded correctly.");
+                alert("Could not generate image. Please ensure all images are loaded correctly (e.g., upload local files if external image issues persist).");
+            }).finally(() => {
+                document.body.removeChild(renderTarget); // Remove the off-screen element
             });
         });
 
-        // Clear All Button Click
+        // Event listener for "Clear All" button click
         clearBtn.addEventListener('click', () => {
             headlineInput.value = '';
             detailsInput.value = '';
-            imageUpload.value = ''; // Clear file input
+            imageUpload.value = '';
             fileNameSpan.textContent = '';
 
-
-            // Reset previews to initial state
-            for (const styleId in previews) {
-                const p = previews[styleId];
-                p.headlineText.textContent = '';
-                p.detailsText.textContent = '';
-                p.postImage.src = "https://placehold.co/600x800/A0A0A0/FFFFFF?text=Upload+Image"; // Reset to placeholder
-                p.detailsText.classList.add('hidden'); // Hide details text initially
-            }
-
+            // Hide generated image and disable download button
             generatedImage.src = '';
             generatedImage.classList.add('hidden');
-            downloadBtn.classList.add('hidden');
+            downloadBtn.disabled = true;
+            downloadBtn.style.opacity = 0.5;
+            downloadBtn.style.cursor = 'not-allowed';
             outputTitle.classList.add('hidden');
 
-            // Set radio to default style1 and activate it
+            // Reset selected style to 'style1'
             document.querySelector('input[name="postStyle"][value="style1"]').checked = true;
             currentStyle = 'style1';
-            for (const styleId in previews) {
-                if (styleId === currentStyle) {
-                    previews[styleId].element.classList.add('active');
-                } else {
-                    previews[styleId].element.classList.remove('active');
-                }
-            }
-
-            // Update previews with initial placeholder text and branding
-            updatePreviews();
         });
 
-        // Initial setup on load
+        // Initial setup on window load
         window.onload = () => {
-            // Set initial placeholder text and adjust font size for all previews
-            updatePreviews();
+            // Ensure download button is disabled on load
+            downloadBtn.disabled = true;
+            downloadBtn.style.opacity = 0.5;
+            downloadBtn.style.cursor = 'not-allowed';
         };
     </script>
 </body>
