@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>News Post Creator</title>
+    <title>News Post Creator 2</title>
     <!-- Tailwind CSS CDN -->
     <script src="https://cdn.tailwindcss.com"></script>
     <!-- Google Fonts - Bebas Neue -->
@@ -32,34 +32,47 @@
             padding: 20px;
         }
 
-        /* Styling for the *rendering target* which is kept off-screen or hidden */
-        .render-target {
-            width: 600px; /* Fixed width for consistent image output */
-            height: 800px; /* Fixed height for consistent image output (3:4 aspect ratio) */
-            background-color: #fff;
+        /* The single live preview/output container */
+        #livePreviewContainer {
+            width: 600px; /* Fixed width for consistent display */
+            height: 800px; /* Fixed height (3:4 aspect ratio) */
+            background-color: #000; /* Default black background */
             position: relative;
             overflow: hidden;
-            box-sizing: border-box;
-            /* IMPORTANT: This element is never displayed to the user */
-            position: absolute;
-            left: -9999px; /* Move far off-screen */
-            top: -9999px;
-            z-index: -1; /* Ensure it's behind everything */
-            /* Add some base styling that applies to all dynamically created styles */
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
             border-radius: 12px;
-            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1); /* For the generated image only */
+            box-sizing: border-box;
+            display: flex; /* Flex container for dynamic layout */
+            flex-direction: column; /* Default flex direction */
+            justify-content: space-between; /* Default justification */
         }
 
-        .post-image {
+        /* Styling for the *rendering target* (used by html2canvas, kept off-screen) */
+        .render-target {
+            /* This will be dynamically created and styled based on the current live preview */
+            width: 600px;
+            height: 800px;
+            position: absolute;
+            left: -9999px;
+            top: -9999px;
+            overflow: hidden;
+            border-radius: 12px;
+            box-sizing: border-box;
+            background-color: #000;
+        }
+
+        /* Image/Video frame styling - object-fit: contain for center fill without stretching */
+        .post-media-element {
             max-width: 100%;
             max-height: 100%;
-            object-fit: cover;
-            position: absolute;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            border-radius: 12px;
+            object-fit: contain; /* Ensures full image/video frame is visible, no stretching */
+            position: absolute; /* Centered */
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            width: 100%; /* Take up max space */
+            height: 100%; /* Take up max space */
+            border-radius: 12px; /* Match parent container */
         }
 
         /* Branding Text Styling (vikramaditya.com) - Base Style for dynamic rendering */
@@ -78,86 +91,74 @@
         /* Style 1 */
         .style1-text-overlay {
             position: absolute; bottom: 0; left: 0; right: 0;
-            background-color: rgba(0, 0, 0, 0.9); padding: 20px;
+            background-color: #000; padding: 20px;
             display: flex; flex-direction: column; align-items: flex-start; /* Left Align */ justify-content: center;
             color: white; z-index: 10; min-height: 25%; box-sizing: border-box;
         }
-        .style1-headline-text { text-transform: uppercase; text-align: left; line-height: 1.1; word-break: break-word; padding: 5px 0; text-shadow: 2px 2px 6px rgba(0, 0, 0, 0.9); width: 100%; }
-        .style1-details-text { text-transform: none; text-align: left; font-size: 1rem; opacity: 0.8; margin-top: 10px; line-height: 1.3; width: 100%; }
+        .style1-headline-text { text-transform: uppercase; text-align: left; line-height: 1.1; word-break: break-word; padding: 5px 0; text-shadow: 2px 2px 6px rgba(0, 0, 0, 0.9); width: 100%; color: #fff; }
+        .style1-details-text { text-transform: none; text-align: left; font-size: 1rem; opacity: 0.7; margin-top: 10px; line-height: 1.3; width: 100%; color: #fff; }
         .style1-branding-text { top: 20px; right: 20px; bottom: unset; left: unset; }
 
         /* Style 2 */
         .style2-text-overlay {
             position: absolute; top: 0; left: 0; right: 0;
-            background-color: rgba(0, 0, 0, 0.85); padding: 20px;
+            background-color: #000; padding: 20px;
             display: flex; flex-direction: column; align-items: flex-start; /* Left Align */ justify-content: center;
             color: white; z-index: 10; min-height: 20%; box-sizing: border-box;
         }
-        .style2-headline-text { text-transform: uppercase; text-align: left; line-height: 1.1; word-break: break-word; text-shadow: 2px 2px 6px rgba(0, 0, 0, 0.9); width: 100%; }
-        .style2-details-text { text-align: left; line-height: 1.2; word-break: break-word; margin-top: 10px; text-shadow: 1px 1px 3px rgba(0, 0, 0, 0.8); width: 100%; }
+        .style2-headline-text { text-transform: uppercase; text-align: left; line-height: 1.1; word-break: break-word; text-shadow: 2px 2px 6px rgba(0, 0, 0, 0.9); width: 100%; color: #fff; }
+        .style2-details-text { text-align: left; line-height: 1.2; word-break: break-word; margin-top: 10px; text-shadow: 1px 1px 3px rgba(0, 0, 0, 0.8); width: 100%; color: #fff; opacity: 0.7; }
         .style2-branding-text { bottom: 20px; right: 20px; top: unset; left: unset; }
 
         /* Style 3 */
         .style3-text-overlay {
             position: absolute; top: 0; bottom: 0; left: 0;
-            width: 40%; background-color: rgba(0, 0, 0, 0.9); padding: 20px;
-            display: flex; flex-direction: column; align-items: flex-start; /* Left Align */ justify-content: center;
+            width: 40%; background-color: #000; padding: 20px;
+            display: flex; flex-direction: column; align-items: flex-start; justify-content: center;
             color: white; z-index: 10; box-sizing: border-box; text-align: left;
         }
-        .style3-headline-text { text-transform: uppercase; text-align: left; line-height: 1.1; word-break: break-word; text-shadow: 2px 2px 6px rgba(0, 0, 0, 0.9); margin-bottom: 10px; width: 100%; }
-        .style3-details-text { text-align: left; line-height: 1.2; word-break: break-word; text-shadow: 1px 1px 3px rgba(0, 0, 0, 0.8); width: 100%; }
+        .style3-headline-text { text-transform: uppercase; text-align: left; line-height: 1.1; word-break: break-word; text-shadow: 2px 2px 6px rgba(0, 0, 0, 0.9); margin-bottom: 10px; width: 100%; color: #fff; }
+        .style3-details-text { text-align: left; line-height: 1.2; word-break: break-word; text-shadow: 1px 1px 3px rgba(0, 0, 0, 0.8); width: 100%; color: #fff; opacity: 0.7; }
         .style3-branding-text { top: 20px; right: 20px; bottom: unset; left: unset; }
 
-        /* Style 4 */
-        .style4-text-overlay {
-            position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%);
-            width: 90%; max-height: 80%; background-color: rgba(0, 0, 0, 0.6); padding: 30px;
-            display: flex; flex-direction: column; align-items: flex-start; /* Left Align */ justify-content: center;
-            color: white; z-index: 10; box-sizing: border-box; border-radius: 10px;
-            text-align: left; overflow: hidden;
-        }
-        .style4-headline-text { text-transform: uppercase; text-align: left; line-height: 1.1; word-break: break-word; text-shadow: 2px 2px 6px rgba(0, 0, 0, 0.9); margin-bottom: 15px; width: 100%; }
-        .style4-details-text { text-align: left; line-height: 1.2; word-break: break-word; text-shadow: 1px 1px 3px rgba(0, 0, 0, 0.8); max-height: 50%; overflow: hidden; width: 100%; }
-        .style4-branding-text { top: 20px; left: 20px; bottom: unset; right: unset; }
-
         /* Style 5 */
-        .style5-top-section { background-color: #1a202c; padding: 20px; text-align: left; color: white; flex-shrink: 0; display: flex; flex-direction: column; align-items: flex-start; }
-        .style5-headline-text { text-transform: uppercase; text-align: left; line-height: 1.1; word-break: break-word; text-shadow: 1px 1px 3px rgba(0, 0, 0, 0.7); margin-bottom: 10px; width: 100%; }
-        .style5-emphasized-text-container { background-color: #dc2626; padding: 10px 15px; margin: 10px 0; /* Align left */ display: inline-block; border-radius: 4px; white-space: normal; }
+        .style5-top-section { background-color: #000; padding: 20px; text-align: left; color: white; flex-shrink: 0; display: flex; flex-direction: column; align-items: flex-start; }
+        .style5-headline-text { text-transform: uppercase; text-align: left; line-height: 1.1; word-break: break-word; text-shadow: 1px 1px 3px rgba(0, 0, 0, 0.7); margin-bottom: 10px; width: 100%; color: #fff; }
+        .style5-emphasized-text-container { background-color: #dc2626; padding: 10px 15px; margin: 10px 0; display: inline-block; border-radius: 4px; white-space: normal; }
         .style5-emphasized-text { text-transform: uppercase; color: white; text-align: left; line-height: 1.1; word-break: break-word; text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.5); display: block; width: 100%; }
-        .style5-details-text { text-transform: none; text-align: left; font-size: 1rem; margin-top: 10px; line-height: 1.3; width: 100%; }
+        .style5-details-text { text-transform: none; text-align: left; font-size: 1rem; margin-top: 10px; line-height: 1.3; width: 100%; color: #fff; opacity: 0.7; }
         .style5-main-image-section { flex-grow: 1; position: relative; background-color: #000; display: flex; justify-content: center; align-items: center; padding: 20px; }
-        .style5-image-frame { position: relative; width: 90%; height: 90%; background-color: #2d3748; border-radius: 8px; overflow: hidden; box-shadow: inset 0 0 10px rgba(0,0,0,0.5); display: flex; justify-content: center; align-items: center; }
-        .style5-post-image-inside-frame { width: 95%; height: 95%; object-fit: cover; position: relative; border-radius: 4px; }
-        .style5-bottom-footer { background-color: #1a202c; padding: 15px 20px; text-align: left; color: white; flex-shrink: 0; font-size: 1.25rem; font-weight: bold; text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.5); }
+        .style5-image-frame { position: relative; width: 90%; height: 90%; background-color: #2d3748; border-radius: 8px; overflow: hidden; display: flex; justify-content: center; align-items: center; }
+        .style5-post-image-inside-frame { width: 95%; height: 95%; object-fit: contain; position: relative; border-radius: 4px; }
+        .style5-bottom-footer { background-color: #000; padding: 15px 20px; text-align: left; color: white; flex-shrink: 0; font-size: 1.25rem; font-weight: bold; text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.5); }
         .style5-branding-text { top: 20px; right: 20px; bottom: unset; left: unset; padding: 5px 10px; text-shadow: 1px 1px 4px rgba(0, 0, 0, 0.8); color: white; }
         .style5-footer-branding { position: static; padding: 0; text-shadow: none; color: white; }
 
         /* Style 6 */
         .style6-text-overlay {
             position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%);
-            width: 85%; max-height: 80%; display: flex; flex-direction: column; align-items: flex-start; /* Left Align */ justify-content: center;
-            z-index: 10; box-sizing: border-box; text-align: left; background-color: rgba(0, 0, 0, 0.6);
-            padding: 20px; border-radius: 10px;
+            width: 85%; max-height: 80%; background-color: #000; padding: 20px;
+            display: flex; flex-direction: column; align-items: flex-start; justify-content: center;
+            z-index: 10; box-sizing: border-box; text-align: left; border-radius: 10px; overflow: hidden;
         }
-        .style6-headline-text { text-transform: uppercase; color: white; text-align: left; line-height: 1.1; word-break: break-word; text-shadow: 2px 2px 6px rgba(0, 0, 0, 0.9); margin-bottom: 10px; width: 100%; }
-        .style6-emphasized-text-container { background-color: #dc2626; padding: 8px 12px; margin: 5px 0; /* Align left */ display: inline-block; border-radius: 4px; white-space: normal; }
+        .style6-headline-text { text-transform: uppercase; color: #fff; text-align: left; line-height: 1.1; word-break: break-word; text-shadow: 2px 2px 6px rgba(0, 0, 0, 0.9); margin-bottom: 10px; width: 100%; }
+        .style6-emphasized-text-container { background-color: #dc2626; padding: 8px 12px; margin: 5px 0; display: inline-block; border-radius: 4px; white-space: normal; }
         .style6-emphasized-text { text-transform: uppercase; color: white; text-align: left; line-height: 1.1; word-break: break-word; text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.5); display: block; width: 100%; }
-        .style6-details-text { text-transform: none; text-align: left; font-size: 1rem; margin-top: 10px; line-height: 1.3; color: white; text-shadow: 1px 1px 3px rgba(0,0,0,0.8); width: 100%; }
+        .style6-details-text { text-transform: none; text-align: left; font-size: 1rem; margin-top: 10px; line-height: 1.3; color: #fff; opacity: 0.7; width: 100%; }
         .style6-branding-text { top: 20px; right: 20px; bottom: unset; left: unset; }
 
         /* Style 7 */
-        .style7-top-half { background-color: #1f2937; flex: 0 0 30%; display: flex; flex-direction: column; align-items: flex-start; /* Left Align */ justify-content: center; padding: 20px; box-sizing: border-box; color: white; }
+        .style7-top-half { background-color: #000; flex: 0 0 30%; display: flex; flex-direction: column; align-items: flex-start; justify-content: center; padding: 20px; box-sizing: border-box; color: white; }
         .style7-bottom-half { flex-grow: 1; position: relative; }
-        .style7-headline-text { text-transform: uppercase; text-align: left; line-height: 1.1; word-break: break-word; text-shadow: 1px 1px 3px rgba(0, 0, 0, 0.7); margin-bottom: 10px; width: 100%; }
-        .style7-details-text { text-align: left; line-height: 1.2; word-break: break-word; text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.5); font-size: 1.25rem; width: 100%; }
+        .style7-headline-text { text-transform: uppercase; text-align: left; line-height: 1.1; word-break: break-word; text-shadow: 1px 1px 3px rgba(0, 0, 0, 0.7); margin-bottom: 10px; width: 100%; color: #fff; }
+        .style7-details-text { text-align: left; line-height: 1.2; word-break: break-word; text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.5); font-size: 1.25rem; width: 100%; color: #fff; opacity: 0.7; }
         .style7-branding-text { bottom: 20px; right: 20px; top: unset; left: unset; position: absolute; }
 
         /* Style 8 */
-        .style8-left-panel { background-color: #1a202c; flex: 0 0 40%; display: flex; flex-direction: column; align-items: flex-start; /* Left Align */ justify-content: center; padding: 20px; box-sizing: border-box; color: white; text-align: left; }
+        .style8-left-panel { background-color: #000; flex: 0 0 40%; display: flex; flex-direction: column; align-items: flex-start; justify-content: center; padding: 20px; box-sizing: border-box; color: white; text-align: left; }
         .style8-right-panel { flex-grow: 1; position: relative; }
-        .style8-headline-text { text-transform: uppercase; text-align: left; line-height: 1.1; word-break: break-word; text-shadow: 1px 1px 3px rgba(0, 0, 0, 0.7); margin-bottom: 15px; width: 100%; }
-        .style8-details-text { text-align: left; line-height: 1.2; word-break: break-word; text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.5); font-size: 1.25rem; width: 100%; }
+        .style8-headline-text { text-transform: uppercase; text-align: left; line-height: 1.1; word-break: break-word; text-shadow: 1px 1px 3px rgba(0, 0, 0, 0.7); margin-bottom: 15px; width: 100%; color: #fff; }
+        .style8-details-text { text-align: left; line-height: 1.2; word-break: break-word; text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.5); font-size: 1.25rem; width: 100%; color: #fff; opacity: 0.7; }
         .style8-branding-text { top: 20px; right: 20px; bottom: unset; left: unset; position: absolute; }
 
 
@@ -238,6 +239,11 @@
 
         /* Responsive adjustments for smaller screens */
         @media (max-width: 900px) {
+            #livePreviewContainer {
+                width: 100%;
+                height: auto;
+                aspect-ratio: 3 / 4;
+            }
             .render-target { /* Adjust target for smaller screens if needed for rendering accuracy */
                 width: 450px; /* Example: 3:4 ratio at smaller size */
                 height: 600px;
@@ -252,7 +258,6 @@
             .style1-branding-text { top: 15px; right: 15px; }
             .style2-branding-text { bottom: 15px; right: 15px; }
             .style3-branding-text { top: 15px; right: 15px; }
-            .style4-branding-text { top: 15px; left: 15px; }
             .style5-branding-text { top: 15px; right: 15px; }
             .style7-branding-text { bottom: 15px; right: 15px; }
             .style8-branding-text { top: 15px; right: 15px; }
@@ -264,8 +269,6 @@
             .style2-details-text { font-size: 0.9rem; }
             .style3-headline-text { font-size: 32px; }
             .style3-details-text { font-size: 0.9rem; }
-            .style4-headline-text { font-size: 32px; }
-            .style4-details-text { font-size: 0.9rem; }
             .style5-top-section { padding: 15px; }
             .style5-headline-text { font-size: 32px; }
             .style5-emphasized-text { font-size: 24px; }
@@ -323,10 +326,10 @@
             </div>
 
             <div>
-                <label for="imageUpload" class="block text-gray-700 text-lg font-semibold mb-2">Upload Background Image</label>
+                <label for="mediaUpload" class="block text-gray-700 text-lg font-semibold mb-2">Upload Image or Video Background</label>
                 <div class="file-input-wrapper">
-                    <button class="btn-upload">Choose Image</button>
-                    <input type="file" id="imageUpload" accept="image/*">
+                    <button class="btn-upload">Choose File</button>
+                    <input type="file" id="mediaUpload" accept="image/*,video/*">
                 </div>
                 <p id="fileName" class="text-sm text-gray-500 mt-2"></p>
             </div>
@@ -346,10 +349,6 @@
                     <label>
                         <input type="radio" name="postStyle" value="style3">
                         <span>Style 3: Side Bar</span> <i class="fa-solid fa-indent ml-2"></i>
-                    </label>
-                    <label>
-                        <input type="radio" name="postStyle" value="style4">
-                        <span>Style 4: Central Overlay</span> <i class="fa-solid fa-layer-group ml-2"></i>
                     </label>
                      <label>
                         <input type="radio" name="postStyle" value="style5">
@@ -376,11 +375,18 @@
             </div>
         </div>
 
-        <!-- Output Section: This section becomes visible AFTER clicking "Generate Image Post" -->
-        <div id="outputSection" class="output-section flex flex-col w-full lg:w-1/2 items-center justify-center relative p-4">
-            <h2 class="text-2xl font-bold text-gray-800 mb-4 hidden" id="outputTitle">Generated Image</h2>
-            <img id="generatedImage" class="hidden max-w-full h-auto border border-gray-300 rounded-lg shadow-md mb-4" alt="Generated News Post">
-            <button id="downloadBtn" disabled class="bg-gradient-to-r from-green-500 to-emerald-600 hover:from-green-600 hover:to-emerald-700 text-white font-bold py-3 px-6 rounded-lg shadow-lg transform transition duration-300 hover:scale-105">Download Image</button>
+        <!-- Preview and Output Section (Unified) -->
+        <div class="preview-section flex flex-col w-full lg:w-1/2 items-center justify-center relative p-4">
+            <h2 class="text-2xl font-bold text-gray-800 mb-4">Live Preview / Generated Image</h2>
+            <!-- THIS IS THE ONLY VISIBLE DISPLAY AREA -->
+            <div id="livePreviewContainer">
+                <!-- Content will be dynamically injected here by JS -->
+            </div>
+
+            <!-- Download button area -->
+            <div id="outputSection" class="output-section flex flex-col items-center mt-8 w-full">
+                <button id="downloadBtn" disabled class="bg-gradient-to-r from-green-500 to-emerald-600 hover:from-green-600 hover:to-emerald-700 text-white font-bold py-3 px-6 rounded-lg shadow-lg transform transition duration-300 hover:scale-105">Download Image</button>
+            </div>
         </div>
     </div>
 
@@ -391,7 +397,7 @@
         // Get DOM elements
         const headlineInput = document.getElementById('headlineInput');
         const detailsInput = document.getElementById('detailsInput');
-        const imageUpload = document.getElementById('imageUpload');
+        const mediaUpload = document.getElementById('mediaUpload');
         const fileNameSpan = document.getElementById('fileName');
         const generateBtn = document.getElementById('generateBtn');
         const downloadBtn = document.getElementById('downloadBtn');
@@ -401,18 +407,22 @@
         const generateHeadlineBtn = document.getElementById('generateHeadlineBtn');
         const summarizeDetailsBtn = document.getElementById('summarizeDetailsBtn');
 
-        const generatedImage = document.getElementById('generatedImage');
-        const outputTitle = document.getElementById('outputTitle');
+        const livePreviewContainer = document.getElementById('livePreviewContainer'); // The single unified display div
 
         let currentStyle = 'style1'; // Default active style on load
+        let currentMediaDataUrl = "https://placehold.co/600x800/000000/FFFFFF?text=Upload+Image+or+Video"; // Store current media URL
 
         // Function to dynamically adjust font size based on content length
-        // This function needs to return the font size as a string (e.g., '60px')
-        function getAdjustedFontSize(text, type, styleId) {
-            let fontSize;
+        function getAdjustedFontSize(text, type, styleId, hasDetails = true) {
             const textLength = text.length;
 
             if (type === 'headline') {
+                if (!hasDetails) { // If no details, allow headline to be larger if space permits
+                    if (textLength <= 10) { return '72px'; }
+                    else if (textLength <= 25) { return '60px'; }
+                    else if (textLength <= 40) { return '48px'; }
+                }
+
                 if (styleId === 'style1') {
                     if (textLength <= 20) { return '60px'; }
                     else if (textLength <= 40) { return '48px'; }
@@ -436,7 +446,7 @@
                     else if (textLength <= 60) { return '36px'; }
                     else { return '28px'; }
                 }
-                else { // Default for styles 2, 4
+                else { // Default for styles 2
                     if (textLength <= 15) { return '64px'; }
                     else if (textLength <= 30) { return '48px'; }
                     else if (textLength <= 50) { return '36px'; }
@@ -462,7 +472,7 @@
                     else if (textLength <= 200) { return '18px'; }
                     else { return '16px'; }
                 }
-                else { // Default for styles 2, 4
+                else { // Default for styles 2
                     if (textLength <= 50) { return '24px'; }
                     else if (textLength <= 100) { return '20px'; }
                     else if (textLength <= 200) { return '18px'; }
@@ -472,35 +482,35 @@
             return '16px'; // Default fallback
         }
 
-        // This function will build the HTML structure for the selected style
-        // in a detached DOM element, which html2canvas will then render.
-        function buildRenderTargetHTML(styleId, headlineText, detailsText, imageUrl) {
-            const renderTarget = document.createElement('div');
-            renderTarget.className = `render-target`; // Base class for off-screen rendering
-            renderTarget.style.display = 'flex'; // Ensure it's rendered for html2canvas
-            // These properties are crucial for html2canvas to render correctly
-            renderTarget.style.width = '600px';
-            renderTarget.style.height = '800px';
-            renderTarget.style.position = 'absolute'; // Position off-screen
-            renderTarget.style.left = '-9999px';
-            renderTarget.style.top = '-9999px';
-            renderTarget.style.overflow = 'hidden';
-            renderTarget.style.borderRadius = '12px';
-            renderTarget.style.boxSizing = 'border-box';
-
-
-            const imageElement = `<img class="post-image" src="${imageUrl}" alt="Background Image">`;
-            const brandingElement = `<div class="font-bebas branding-text">vikramaditya.com</div>`;
-
-            const headlineFontSize = getAdjustedFontSize(headlineText, 'headline', styleId);
+        // This function builds the HTML content for the live preview and the off-screen render target
+        function buildPreviewContent(targetElement, styleId, headlineText, detailsText, mediaDataUrl) {
+            const hasDetails = detailsText.length > 0;
+            const headlineFontSize = getAdjustedFontSize(headlineText, 'headline', styleId, hasDetails);
             const detailsFontSize = getAdjustedFontSize(detailsText, 'details', styleId);
-            const detailsDisplay = (detailsText.length === 0) ? 'none' : 'block';
+            const detailsDisplay = hasDetails ? 'block' : 'none';
+
+            let contentHTML = '';
+            
+            const mediaElement = `<img class="post-media-element" src="${mediaDataUrl}" alt="Background Media">`;
+            
+            // Reset base container styles first for dynamic changes
+            targetElement.style.cssText = `
+                width: 600px;
+                height: 800px;
+                background-color: #000;
+                position: relative;
+                overflow: hidden;
+                box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+                border-radius: 12px;
+                box-sizing: border-box;
+                display: flex;
+                flex-direction: column; /* Default */
+                justify-content: space-between; /* Default */
+            `;
 
             if (styleId === 'style1') {
-                renderTarget.style.flexDirection = 'column'; // Ensure correct flex direction for html2canvas
-                renderTarget.style.justifyContent = 'space-between';
-                renderTarget.innerHTML = `
-                    ${imageElement}
+                contentHTML = `
+                    ${mediaElement}
                     <div class="style1-text-overlay">
                         <p class="font-bebas style1-headline-text" style="font-size: ${headlineFontSize};">${headlineText}</p>
                         <p class="font-bebas style1-details-text" style="font-size: ${detailsFontSize}; display: ${detailsDisplay};">${detailsText}</p>
@@ -508,10 +518,8 @@
                     <div class="font-bebas branding-text style1-branding-text">vikramaditya.com</div>
                 `;
             } else if (styleId === 'style2') {
-                renderTarget.style.flexDirection = 'column';
-                renderTarget.style.justifyContent = 'space-between';
-                renderTarget.innerHTML = `
-                    ${imageElement}
+                contentHTML = `
+                    ${mediaElement}
                     <div class="style2-text-overlay">
                         <p class="font-bebas style2-headline-text" style="font-size: ${headlineFontSize};">${headlineText}</p>
                         <p class="font-bebas style2-details-text" style="font-size: ${detailsFontSize}; display: ${detailsDisplay};">${detailsText}</p>
@@ -519,46 +527,34 @@
                     <div class="font-bebas branding-text style2-branding-text">vikramaditya.com</div>
                 `;
             } else if (styleId === 'style3') {
-                 renderTarget.style.flexDirection = 'row'; /* For side by side layout */
-                 renderTarget.innerHTML = `
+                 targetElement.style.flexDirection = 'row'; /* Override for this style */
+                 contentHTML = `
                     <div class="style3-text-overlay">
                         <p class="font-bebas style3-headline-text" style="font-size: ${headlineFontSize};">${headlineText}</p>
                         <p class="font-bebas style3-details-text" style="font-size: ${detailsFontSize}; display: ${detailsDisplay};">${detailsText}</p>
                     </div>
-                    <div class="style3-right-panel" style="flex-grow: 1; position: relative;">${imageElement}</div>
+                    <div class="style3-right-panel" style="flex-grow: 1; position: relative; background-color: #000;">${mediaElement}</div>
                     <div class="font-bebas branding-text style3-branding-text">vikramaditya.com</div>
                 `;
-            } else if (styleId === 'style4') {
-                renderTarget.style.flexDirection = 'column';
-                renderTarget.style.justifyContent = 'space-between';
-                renderTarget.innerHTML = `
-                    ${imageElement}
-                    <div class="style4-text-overlay">
-                        <p class="font-bebas style4-headline-text" style="font-size: ${headlineFontSize};">${headlineText}</p>
-                        <p class="font-bebas style4-details-text" style="font-size: ${detailsFontSize}; display: ${detailsDisplay};">${detailsText}</p>
-                    </div>
-                    <div class="font-bebas branding-text style4-branding-text">vikramaditya.com</div>
-                `;
             } else if (styleId === 'style5') {
-                 // Style 5: Multi-Section (Inspired by provided image)
-                const emphasizedTextDisplay = (detailsText.length === 0) ? 'none' : 'inline-block';
+                targetElement.style.backgroundColor = '#000'; // Ensure full black background for this style
+                targetElement.style.flexDirection = 'column';
+                targetElement.style.justifyContent = 'space-between'; // Reset to default for this multi-section style
+
+                const emphasizedTextDisplay = hasDetails ? 'inline-block' : 'none';
                 const emphasizedFontSize = getAdjustedFontSize(detailsText, 'details', styleId);
 
-                renderTarget.style.backgroundColor = '#1a202c'; // Apply background to root
-                renderTarget.style.flexDirection = 'column';
-                renderTarget.style.justifyContent = 'space-between';
-
-                renderTarget.innerHTML = `
+                contentHTML = `
                     <div class="style5-top-section">
                         <p class="font-bebas style5-headline-text" style="font-size: ${headlineFontSize};">${headlineText}</p>
                         <div class="style5-emphasized-text-container" style="display: ${emphasizedTextDisplay};">
                             <p class="font-bebas style5-emphasized-text" style="font-size: ${emphasizedFontSize};">${detailsText}</p>
                         </div>
-                        <p class="font-bebas style5-details-text" style="display: none;"></p> <!-- Kept for structure, not used by primary details -->
+                        <p class="font-bebas style5-details-text" style="display: none;"></p>
                     </div>
                     <div class="style5-main-image-section">
                         <div class="style5-image-frame">
-                            <img class="style5-post-image-inside-frame" src="${imageUrl}" alt="Main Visual">
+                            <img class="style5-post-image-inside-frame" src="${mediaDataUrl}" alt="Main Visual">
                         </div>
                     </div>
                     <div class="style5-bottom-footer">
@@ -567,14 +563,14 @@
                     <div class="font-bebas branding-text style5-branding-text">vikramaditya.com</div>
                 `;
             } else if (styleId === 'style6') {
-                // Style 6: Emphasized Line Central
-                const emphasizedTextDisplay = (detailsText.length === 0) ? 'none' : 'inline-block';
+                targetElement.style.flexDirection = 'column';
+                targetElement.style.justifyContent = 'space-between';
+
+                const emphasizedTextDisplay = hasDetails ? 'inline-block' : 'none';
                 const emphasizedFontSize = getAdjustedFontSize(detailsText, 'details', styleId);
 
-                renderTarget.style.flexDirection = 'column';
-                renderTarget.style.justifyContent = 'space-between';
-                renderTarget.innerHTML = `
-                    ${imageElement}
+                contentHTML = `
+                    ${mediaElement}
                     <div class="style6-text-overlay">
                         <p class="font-bebas style6-headline-text" style="font-size: ${headlineFontSize};">${headlineText}</p>
                         <div class="style6-emphasized-text-container" style="display: ${emphasizedTextDisplay};">
@@ -585,66 +581,133 @@
                     <div class="font-bebas branding-text style6-branding-text">vikramaditya.com</div>
                 `;
             } else if (styleId === 'style7') {
-                // Style 7: Two-Tone Background with Headline & Details
-                renderTarget.style.flexDirection = 'column'; // Explicitly column layout
-                renderTarget.innerHTML = `
+                targetElement.style.flexDirection = 'column';
+                contentHTML = `
                     <div class="style7-top-half">
                         <p class="font-bebas style7-headline-text" style="font-size: ${headlineFontSize};">${headlineText}</p>
                         <p class="font-bebas style7-details-text" style="font-size: ${detailsFontSize}; display: ${detailsDisplay};">${detailsText}</p>
                     </div>
                     <div class="style7-bottom-half">
-                        <img class="post-image" src="${imageUrl}" alt="Background Image" style="width: 100%; height: 100%; object-fit: cover;">
+                        <img class="post-media-element" src="${mediaDataUrl}" alt="Background Image" style="width: 100%; height: 100%; object-fit: contain; position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%);">
                     </div>
                     <div class="font-bebas branding-text style7-branding-text">vikramaditya.com</div>
                 `;
             } else if (styleId === 'style8') {
-                // Style 8: Vertical Split with Headline & Image
-                renderTarget.style.flexDirection = 'row'; // Explicitly row layout
-                renderTarget.innerHTML = `
+                targetElement.style.flexDirection = 'row';
+                contentHTML = `
                     <div class="style8-left-panel">
                         <p class="font-bebas style8-headline-text" style="font-size: ${headlineFontSize};">${headlineText}</p>
                         <p class="font-bebas style8-details-text" style="font-size: ${detailsFontSize}; display: ${detailsDisplay};">${detailsText}</p>
                     </div>
                     <div class="style8-right-panel">
-                        <img class="post-image" src="${imageUrl}" alt="Background Image" style="width: 100%; height: 100%; object-fit: cover;">
+                        <img class="post-media-element" src="${mediaDataUrl}" alt="Background Image" style="width: 100%; height: 100%; object-fit: contain; position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%);">
                     </div>
                     <div class="font-bebas branding-text style8-branding-text">vikramaditya.com</div>
                 `;
             }
 
-            return renderTarget;
+            targetElement.innerHTML = contentHTML;
         }
 
-        // Event listener for headline input changes (no direct visual update on screen)
-        headlineInput.addEventListener('input', () => {
-            // No need to update anything visible until generate button is clicked
-        });
 
-        // Event listener for details input changes (no direct visual update on screen)
-        detailsInput.addEventListener('input', () => {
-            // No need to update anything visible until generate button is clicked
-        });
+        // --- Video Frame Capture Logic ---
+        async function captureVideoFrame(videoFile) {
+            return new Promise((resolve, reject) => {
+                const video = document.createElement('video');
+                video.muted = true;
+                video.autoplay = false;
+                video.playsinline = true;
+                video.preload = 'metadata';
+                video.style.position = 'absolute';
+                video.style.left = '-9999px';
+                video.style.top = '-9999px';
+                document.body.appendChild(video);
 
-        // Handle background image upload changes (no direct visual update on screen)
-        imageUpload.addEventListener('change', (event) => {
+                video.src = URL.createObjectURL(videoFile);
+
+                const onLoadedMetadata = () => {
+                    video.currentTime = 0;
+                };
+
+                const onSeeked = () => {
+                    const canvas = document.createElement('canvas');
+                    canvas.width = video.videoWidth;
+                    canvas.height = video.videoHeight;
+                    const ctx = canvas.getContext('2d');
+                    ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
+
+                    const dataURL = canvas.toDataURL('image/png');
+                    URL.revokeObjectURL(video.src);
+                    document.body.removeChild(video);
+                    video.removeEventListener('loadedmetadata', onLoadedMetadata);
+                    video.removeEventListener('seeked', onSeeked);
+                    resolve(dataURL);
+                };
+
+                video.addEventListener('loadedmetadata', onLoadedMetadata);
+                video.addEventListener('seeked', onSeeked);
+                video.addEventListener('error', (e) => {
+                    URL.revokeObjectURL(video.src);
+                    document.body.removeChild(video);
+                    reject(new Error('Error loading video for frame capture: ' + e.message));
+                });
+                video.load();
+            });
+        }
+
+        // --- Live Preview Update Function ---
+        function updateLivePreview() {
+            const headline = headlineInput.value.toUpperCase();
+            const details = detailsInput.value;
+            buildPreviewContent(livePreviewContainer, currentStyle, headline, details, currentMediaDataUrl);
+        }
+
+
+        // Event listeners for inputs and style changes (triggering live preview update)
+        headlineInput.addEventListener('input', updateLivePreview);
+        detailsInput.addEventListener('input', updateLivePreview);
+
+        mediaUpload.addEventListener('change', async (event) => {
             const file = event.target.files[0];
             if (file) {
                 fileNameSpan.textContent = `Selected: ${file.name}`;
+                if (file.type.startsWith('image/')) {
+                    currentMediaDataUrl = URL.createObjectURL(file);
+                    updateLivePreview();
+                } else if (file.type.startsWith('video/')) {
+                    fileNameSpan.textContent = `Processing video: ${file.name}...`;
+                    try {
+                        currentMediaDataUrl = await captureVideoFrame(file);
+                        updateLivePreview();
+                        fileNameSpan.textContent = `Captured frame from: ${file.name}`;
+                    } catch (error) {
+                        alert("Could not capture video frame. Please try another video or an image.");
+                        console.error("Video frame capture error:", error);
+                        currentMediaDataUrl = "https://placehold.co/600x800/000000/FFFFFF?text=Error+Loading+Video";
+                        updateLivePreview();
+                        fileNameSpan.textContent = 'Error with video.';
+                    }
+                } else {
+                    alert("Unsupported file type. Please upload an image or video.");
+                    currentMediaDataUrl = "https://placehold.co/600x800/000000/FFFFFF?text=Unsupported+File";
+                    updateLivePreview();
+                    fileNameSpan.textContent = 'Unsupported file type.';
+                }
             } else {
                 fileNameSpan.textContent = '';
+                currentMediaDataUrl = "https://placehold.co/600x800/000000/FFFFFF?text=Upload+Image+or+Video";
+                updateLivePreview();
             }
-            // No need to update previews, as there are none visible
         });
 
-        // Event listener for style selection (radio buttons)
         styleRadios.forEach(radio => {
             radio.addEventListener('change', (event) => {
                 currentStyle = event.target.value;
-                // No need to update previews, as there are none visible
+                updateLivePreview();
             });
         });
 
-        // Event listener for "Generate Headline Suggestion" button
+        // AI Feature Buttons
         generateHeadlineBtn.addEventListener('click', async () => {
             generateHeadlineBtn.disabled = true;
             generateHeadlineBtn.textContent = 'Generating...';
@@ -654,143 +717,136 @@
                 : "Generate a catchy and impactful news headline (all caps, around 10-15 words).";
 
             try {
-                let chatHistory = [];
-                chatHistory.push({ role: "user", parts: [{ text: prompt }] });
-                const payload = { contents: chatHistory };
-                const apiKey = "";
+                let chatHistory = []; chatHistory.push({ role: "user", parts: [{ text: prompt }] });
+                const payload = { contents: chatHistory }; const apiKey = "";
                 const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${apiKey}`;
-
-                const response = await fetch(apiUrl, {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify(payload)
-                });
-
+                const response = await fetch(apiUrl, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(payload) });
                 const result = await response.json();
-                if (result.candidates && result.candidates.length > 0 &&
-                    result.candidates[0].content && result.candidates[0].content.parts &&
-                    result.candidates[0].content.parts.length > 0) {
-                    const text = result.candidates[0].content.parts[0].text;
-                    headlineInput.value = text.toUpperCase().replace(/[\*\_\`]/g, '');
-                } else {
-                    console.error("Gemini API response structure unexpected:", result);
-                    alert("Could not generate headline. Please try again.");
-                }
-            } catch (error) {
-                console.error("Error calling Gemini API for headline:", error);
-                alert("Error generating headline. Please check your network or try again later.");
-            } finally {
-                generateHeadlineBtn.disabled = false;
-                generateHeadlineBtn.textContent = '✨ Generate Headline Suggestion';
-            }
+                if (result.candidates && result.candidates.length > 0) { headlineInput.value = result.candidates[0].content.parts[0].text.toUpperCase().replace(/[\*\_\`]/g, ''); updateLivePreview(); }
+                else { console.error("API response unexpected:", result); alert("Could not generate headline. Try again."); }
+            } catch (error) { console.error("Error calling API:", error); alert("Error generating headline. Check network."); }
+            finally { generateHeadlineBtn.disabled = false; generateHeadlineBtn.textContent = '✨ Generate Headline Suggestion'; }
         });
 
-        // Event listener for "Summarize Details" button
         summarizeDetailsBtn.addEventListener('click', async () => {
-            if (detailsInput.value.trim() === '') {
-                alert("Please enter some details to summarize.");
-                return;
-            }
-
+            if (detailsInput.value.trim() === '') { alert("Please enter details to summarize."); return; }
             summarizeDetailsBtn.disabled = true;
             summarizeDetailsBtn.textContent = 'Summarizing...';
 
-            const prompt = `Summarize the following news details concisely, focusing on the main points (keep it under 100 words): "${detailsInput.value}"`;
+            const prompt = `Summarize the following news details concisely, focusing on main points (under 100 words): "${detailsInput.value}"`;
 
             try {
-                let chatHistory = [];
-                chatHistory.push({ role: "user", parts: [{ text: prompt }] });
-                const payload = { contents: chatHistory };
-                const apiKey = "";
+                let chatHistory = []; chatHistory.push({ role: "user", parts: [{ text: prompt }] });
+                const payload = { contents: chatHistory }; const apiKey = "";
                 const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${apiKey}`;
-
-                const response = await fetch(apiUrl, {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify(payload)
-                });
-
+                const response = await fetch(apiUrl, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(payload) });
                 const result = await response.json();
-                if (result.candidates && result.candidates.length > 0 &&
-                    result.candidates[0].content && result.candidates[0].content.parts &&
-                    result.candidates[0].content.parts.length > 0) {
-                    const text = result.candidates[0].content.parts[0].text;
-                    detailsInput.value = text.replace(/[\*\_\`]/g, '');
-                } else {
-                    console.error("Gemini API response structure unexpected:", result);
-                    alert("Could not summarize details. Please try again.");
-                }
-            } catch (error) {
-                console.error("Error calling Gemini API for summary:", error);
-                alert("Error summarizing details. Please check your network or try again later.");
-            } finally {
-                summarizeDetailsBtn.disabled = false;
-                summarizeDetailsBtn.textContent = '✨ Summarize Details';
-            }
+                if (result.candidates && result.candidates.length > 0) { detailsInput.value = result.candidates[0].content.parts[0].text.replace(/[\*\_\`]/g, ''); updateLivePreview(); }
+                else { console.error("API response unexpected:", result); alert("Could not summarize. Try again."); }
+            } catch (error) { console.error("Error calling API:", error); alert("Error summarizing. Check network."); }
+            finally { summarizeDetailsBtn.disabled = false; summarizeDetailsBtn.textContent = '✨ Summarize Details'; }
         });
 
 
         // Event listener for "Generate Image Post" button click
-        generateBtn.addEventListener('click', () => {
-            // Get current input values
+        generateBtn.addEventListener('click', async () => {
+            generateBtn.disabled = true;
+            generateBtn.textContent = 'Generating...';
+
+            // Disable download button immediately
+            downloadBtn.disabled = true;
+            downloadBtn.style.opacity = 0.5;
+            downloadBtn.style.cursor = 'not-allowed';
+            delete downloadBtn.dataset.imgUrl;
+            delete downloadBtn.dataset.filename;
+
             const headline = headlineInput.value.toUpperCase();
             const details = detailsInput.value;
-            const bgImageUrl = imageUpload.files[0] ? URL.createObjectURL(imageUpload.files[0]) : "https://placehold.co/600x800/A0A0A0/FFFFFF?text=Upload+Image";
 
-            // Build the off-screen render target
-            const renderTarget = buildRenderTargetHTML(currentStyle, headline, details, bgImageUrl);
+            // Create an off-screen render target
+            const renderTarget = document.createElement('div');
+            // Copy styling and content from the live preview into the render target
+            renderTarget.className = 'render-target'; // Apply render target specific styles
+            // It's important to copy all computed styles or replicate them for off-screen rendering accuracy
+            renderTarget.style.cssText = livePreviewContainer.style.cssText; // Copy dynamic styles
+            renderTarget.innerHTML = livePreviewContainer.innerHTML; // Copy content as is
+            
             document.body.appendChild(renderTarget); // Temporarily add to DOM for html2canvas
 
-            // Use html2canvas to capture the off-screen element
             html2canvas(renderTarget, {
                 useCORS: true,
-                scale: 3,
+                scale: 3, // High resolution
                 allowTaint: true,
                 logging: false,
             }).then(canvas => {
                 const imgUrl = canvas.toDataURL('image/png');
-                generatedImage.src = imgUrl;
-                generatedImage.classList.remove('hidden'); // Show the generated image
-
-                downloadBtn.disabled = false; // Enable download button
+                
+                // REPLACE live preview content with the generated image
+                livePreviewContainer.innerHTML = `<img src="${imgUrl}" class="post-media-element" style="position: static; transform: none;" alt="Generated News Post">`;
+                livePreviewContainer.style.flexDirection = 'column'; // Reset to default layout if overridden by style
+                livePreviewContainer.style.justifyContent = 'center'; // Center the image if it's the only content
+                
+                // Enable download button and store image data
+                downloadBtn.disabled = false;
                 downloadBtn.style.opacity = 1;
                 downloadBtn.style.cursor = 'pointer';
+                downloadBtn.dataset.imgUrl = imgUrl;
+                downloadBtn.dataset.filename = `news_post_${currentStyle}.png`;
 
-                outputTitle.classList.remove('hidden'); // Show title
-
-                downloadBtn.href = imgUrl;
-                downloadBtn.download = `news_post_${currentStyle}.png`;
             }).catch(error => {
-                console.error("Oops, something went wrong while generating the image:", error);
-                alert("Could not generate image. Please ensure all images are loaded correctly (e.g., upload local files if external image issues persist).");
+                console.error("Error generating image:", error);
+                alert("Could not generate image. Ensure files loaded correctly or try again.");
+                // Restore live preview content if generation fails
+                updateLivePreview(); 
             }).finally(() => {
-                document.body.removeChild(renderTarget); // Remove the off-screen element
+                document.body.removeChild(renderTarget); // Clean up off-screen element
+                generateBtn.disabled = false;
+                generateBtn.textContent = 'Generate Image Post';
             });
         });
+
+        // Event listener for "Download Image" button click
+        downloadBtn.addEventListener('click', () => {
+            const imgUrl = downloadBtn.dataset.imgUrl;
+            const filename = downloadBtn.dataset.filename;
+
+            if (imgUrl) {
+                const a = document.createElement('a');
+                a.href = imgUrl;
+                a.download = filename;
+                document.body.appendChild(a);
+                a.click();
+                document.body.removeChild(a);
+            } else {
+                alert("No image generated to download. Please click 'Generate Image Post' first.");
+            }
+        });
+
 
         // Event listener for "Clear All" button click
         clearBtn.addEventListener('click', () => {
             headlineInput.value = '';
             detailsInput.value = '';
-            imageUpload.value = '';
+            mediaUpload.value = '';
             fileNameSpan.textContent = '';
 
-            // Hide generated image and disable download button
-            generatedImage.src = '';
-            generatedImage.classList.add('hidden');
+            // Reset download button state
             downloadBtn.disabled = true;
             downloadBtn.style.opacity = 0.5;
             downloadBtn.style.cursor = 'not-allowed';
-            outputTitle.classList.add('hidden');
+            delete downloadBtn.dataset.imgUrl;
+            delete downloadBtn.dataset.filename;
 
             // Reset selected style to 'style1'
             document.querySelector('input[name="postStyle"][value="style1"]').checked = true;
             currentStyle = 'style1';
+            currentMediaDataUrl = "https://placehold.co/600x800/000000/FFFFFF?text=Upload+Image+or+Video"; // Reset media URL
+            updateLivePreview(); // Update live preview to default state
         });
 
         // Initial setup on window load
         window.onload = () => {
-            // Ensure download button is disabled on load
+            updateLivePreview(); // Call once to set initial live preview
             downloadBtn.disabled = true;
             downloadBtn.style.opacity = 0.5;
             downloadBtn.style.cursor = 'not-allowed';
