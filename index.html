@@ -74,6 +74,16 @@
             height: 100%; /* Take up max space */
             border-radius: 12px; /* Match parent container */
         }
+        /* Specific styling for the video element in live preview */
+        #livePreviewContainer video.post-media-element {
+            object-fit: contain; /* ensure video scales correctly */
+            width: 100%;
+            height: 100%;
+            position: absolute;
+            top: 0; /* Align to top of container */
+            left: 0;
+            transform: none; /* Remove centering transform if it interferes with video controls */
+        }
 
         /* Styling for the generated image when it replaces live preview */
         #livePreviewContainer img.generated-image-display {
@@ -435,8 +445,9 @@
         const livePreviewContainer = document.getElementById('livePreviewContainer'); // The single unified display div
 
         let currentStyle = 'style1'; // Default active style on load
-        let currentMediaDataUrl = "https://placehold.co/600x800/000000/FFFFFF?text=Upload+Image+or+Video"; // Store current media URL for live preview
+        let currentMediaDataUrl = "https://placehold.co/600x800/000000/FFFFFF?text=Upload+Image+or+Video"; // Stores URL for live preview media
         let originalVideoFileUrl = null; // Stores URL for original video download
+
 
         // Function to dynamically adjust font size based on content length
         function getAdjustedFontSize(text, type, styleId, hasDetails = true) {
@@ -510,7 +521,7 @@
 
         // This function builds the HTML content for the live preview and the off-screen render target
         // It's crucial that this function creates the full innerHTML structure
-        function buildPreviewContent(targetElement, styleId, headlineText, detailsText, mediaDataUrl) {
+        function buildPreviewContent(targetElement, styleId, headlineText, detailsText, mediaDataUrl, isVideo = false) {
             const hasDetails = detailsText.length > 0;
             const headlineFontSize = getAdjustedFontSize(headlineText, 'headline', styleId, hasDetails);
             const detailsFontSize = getAdjustedFontSize(detailsText, 'details', styleId);
@@ -518,7 +529,10 @@
 
             let contentHTML = '';
             
-            const mediaElement = `<img class="post-media-element" src="${mediaDataUrl}" alt="Background Media">`;
+            // Choose between img or video tag for media display in live preview
+            const mediaTag = isVideo ? 
+                `<video class="post-media-element" src="${mediaDataUrl}" autoplay loop controls playsinline></video>` :
+                `<img class="post-media-element" src="${mediaDataUrl}" alt="Background Media">`;
             
             // Reset base container styles first for dynamic changes (ensure flex properties are set)
             targetElement.style.cssText = `
@@ -537,7 +551,7 @@
 
             if (styleId === 'style1') {
                 contentHTML = `
-                    ${mediaElement}
+                    ${mediaTag}
                     <div class="style1-text-overlay">
                         <p class="font-bebas style1-headline-text" style="font-size: ${headlineFontSize};">${headlineText}</p>
                         <p class="font-bebas style1-details-text" style="font-size: ${detailsFontSize}; display: ${detailsDisplay};">${detailsText}</p>
@@ -546,7 +560,7 @@
                 `;
             } else if (styleId === 'style2') {
                 contentHTML = `
-                    ${mediaElement}
+                    ${mediaTag}
                     <div class="style2-text-overlay">
                         <p class="font-bebas style2-headline-text" style="font-size: ${headlineFontSize};">${headlineText}</p>
                         <p class="font-bebas style2-details-text" style="font-size: ${detailsFontSize}; display: ${detailsDisplay};">${detailsText}</p>
@@ -560,7 +574,7 @@
                         <p class="font-bebas style3-headline-text" style="font-size: ${headlineFontSize};">${headlineText}</p>
                         <p class="font-bebas style3-details-text" style="font-size: ${detailsFontSize}; display: ${detailsDisplay};">${detailsText}</p>
                     </div>
-                    <div class="style3-right-panel" style="flex-grow: 1; position: relative; background-color: #000;">${mediaElement}</div>
+                    <div class="style3-right-panel" style="flex-grow: 1; position: relative; background-color: #000;">${mediaTag}</div>
                     <div class="font-bebas branding-text style3-branding-text">vikramaditya.com</div>
                 `;
             } else if (styleId === 'style5') {
@@ -597,7 +611,7 @@
                 const emphasizedFontSize = getAdjustedFontSize(detailsText, 'details', styleId);
 
                 contentHTML = `
-                    ${mediaElement}
+                    ${mediaTag}
                     <div class="style6-text-overlay">
                         <p class="font-bebas style6-headline-text" style="font-size: ${headlineFontSize};">${headlineText}</p>
                         <div class="style6-emphasized-text-container" style="display: ${emphasizedTextDisplay};">
@@ -683,16 +697,16 @@
         }
 
         // --- Live Preview Update Function ---
-        function updateLivePreview() {
+        function updateLivePreview(isVideoSource = false) { // Added isVideoSource parameter
             const headline = headlineInput.value.toUpperCase();
             const details = detailsInput.value;
-            buildPreviewContent(livePreviewContainer, currentStyle, headline, details, currentMediaDataUrl);
+            buildPreviewContent(livePreviewContainer, currentStyle, headline, details, currentMediaDataUrl, isVideoSource);
         }
 
 
         // Event listeners for inputs and style changes (triggering live preview update)
-        headlineInput.addEventListener('input', updateLivePreview);
-        detailsInput.addEventListener('input', updateLivePreview);
+        headlineInput.addEventListener('input', () => updateLivePreview(mediaUpload.files[0]?.type.startsWith('video/')));
+        detailsInput.addEventListener('input', () => updateLivePreview(mediaUpload.files[0]?.type.startsWith('video/')));
 
         mediaUpload.addEventListener('change', async (event) => {
             const file = event.target.files[0];
@@ -709,33 +723,22 @@
 
                 if (file.type.startsWith('image/')) {
                     currentMediaDataUrl = URL.createObjectURL(file);
-                    updateLivePreview();
+                    updateLivePreview(false); // It's an image
                     downloadVideoBtn.classList.add('hidden'); // Hide video download button
                     downloadVideoBtn.disabled = true;
                 } else if (file.type.startsWith('video/')) {
                     originalVideoFileUrl = URL.createObjectURL(file); // Store URL for original video download
-                    fileNameSpan.textContent = `Processing video: ${file.name}... (Capturing frame)`;
-                    try {
-                        currentMediaDataUrl = await captureVideoFrame(file); // Capture frame for the image post
-                        updateLivePreview();
-                        fileNameSpan.textContent = `Captured frame from: ${file.name}`;
-                        downloadVideoBtn.classList.remove('hidden'); // Show video download button
-                        downloadVideoBtn.disabled = false;
-                        downloadVideoBtn.dataset.videoUrl = originalVideoFileUrl; // Set video URL for download
-                        downloadVideoBtn.dataset.filename = file.name; // Set original filename
-                    } catch (error) {
-                        alert("Could not capture video frame. Please try another video or an image.");
-                        console.error("Video frame capture error:", error);
-                        currentMediaDataUrl = "https://placehold.co/600x800/000000/FFFFFF?text=Error+Loading+Video";
-                        updateLivePreview();
-                        fileNameSpan.textContent = 'Error with video.';
-                        downloadVideoBtn.classList.add('hidden'); // Hide video download button on error
-                        downloadVideoBtn.disabled = true;
-                    }
+                    currentMediaDataUrl = originalVideoFileUrl; // Live preview shows the actual video
+                    updateLivePreview(true); // It's a video, tell live preview to use video tag
+                    fileNameSpan.textContent = `Playing video: ${file.name}`; // Update text for video playback
+                    downloadVideoBtn.classList.remove('hidden'); // Show video download button
+                    downloadVideoBtn.disabled = false;
+                    downloadVideoBtn.dataset.videoUrl = originalVideoFileUrl; // Set video URL for download
+                    downloadVideoBtn.dataset.filename = file.name; // Set original filename
                 } else {
                     alert("Unsupported file type. Please upload an image or video.");
                     currentMediaDataUrl = "https://placehold.co/600x800/000000/FFFFFF?text=Unsupported+File";
-                    updateLivePreview();
+                    updateLivePreview(false); // Fallback to image preview
                     fileNameSpan.textContent = 'Unsupported file type.';
                     downloadVideoBtn.classList.add('hidden'); // Hide video download button for unsupported
                     downloadVideoBtn.disabled = true;
@@ -750,7 +753,7 @@
                 }
                 currentMediaDataUrl = "https://placehold.co/600x800/000000/FFFFFF?text=Upload+Image+or+Video";
                 originalVideoFileUrl = null;
-                updateLivePreview();
+                updateLivePreview(false); // Default to image placeholder
                 downloadVideoBtn.classList.add('hidden');
                 downloadVideoBtn.disabled = true;
             }
@@ -759,7 +762,7 @@
         styleRadios.forEach(radio => {
             radio.addEventListener('change', (event) => {
                 currentStyle = event.target.value;
-                updateLivePreview();
+                updateLivePreview(mediaUpload.files[0]?.type.startsWith('video/')); // Pass current media type
             });
         });
 
@@ -778,7 +781,7 @@
                 const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${apiKey}`;
                 const response = await fetch(apiUrl, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(payload) });
                 const result = await response.json();
-                if (result.candidates && result.candidates.length > 0) { headlineInput.value = result.candidates[0].content.parts[0].text.toUpperCase().replace(/[\*\_\`]/g, ''); updateLivePreview(); }
+                if (result.candidates && result.candidates.length > 0) { headlineInput.value = result.candidates[0].content.parts[0].text.toUpperCase().replace(/[\*\_\`]/g, ''); updateLivePreview(mediaUpload.files[0]?.type.startsWith('video/')); }
                 else { console.error("API response unexpected:", result); alert("Could not generate headline. Try again."); }
             } catch (error) { console.error("Error calling API:", error); alert("Error generating headline. Check network."); }
             finally { generateHeadlineBtn.disabled = false; generateHeadlineBtn.textContent = '✨ Generate Headline Suggestion'; }
@@ -797,7 +800,7 @@
                 const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${apiKey}`;
                 const response = await fetch(apiUrl, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(payload) });
                 const result = await response.json();
-                if (result.candidates && result.candidates.length > 0) { detailsInput.value = result.candidates[0].content.parts[0].text.replace(/[\*\_\`]/g, ''); updateLivePreview(); }
+                if (result.candidates && result.candidates.length > 0) { detailsInput.value = result.candidates[0].content.parts[0].text.replace(/[\*\_\`]/g, ''); updateLivePreview(mediaUpload.files[0]?.type.startsWith('video/')); }
                 else { console.error("API response unexpected:", result); alert("Could not summarize. Try again."); }
             } catch (error) { console.error("Error calling API:", error); alert("Error summarizing. Check network."); }
             finally { summarizeDetailsBtn.disabled = false; summarizeDetailsBtn.textContent = '✨ Summarize Details'; }
@@ -816,7 +819,6 @@
             delete downloadImgBtn.dataset.imgUrl;
             delete downloadImgBtn.dataset.filename;
 
-            // No need to hide downloaded video button if already hidden
             downloadVideoBtn.disabled = true;
             downloadVideoBtn.style.opacity = 0.5;
             downloadVideoBtn.style.cursor = 'not-allowed';
@@ -824,12 +826,31 @@
 
             const headline = headlineInput.value.toUpperCase();
             const details = detailsInput.value;
+            let mediaForCapture = currentMediaDataUrl; // Use the URL currently in the live preview
+
+            // If it's a video in live preview, capture a static frame for the generated image
+            if (mediaUpload.files[0]?.type.startsWith('video/')) {
+                 fileNameSpan.textContent = `Capturing video frame for generated image...`;
+                 try {
+                    // Capture a new frame from the current original video source for accuracy
+                    mediaForCapture = await captureVideoFrame(mediaUpload.files[0]);
+                 } catch (error) {
+                    alert("Could not capture video frame for image generation. Please try another video or an image.");
+                    console.error("Video frame capture for generation error:", error);
+                    generateBtn.disabled = false;
+                    generateBtn.textContent = 'Generate Image Post';
+                    fileNameSpan.textContent = 'Error capturing frame.';
+                    return;
+                 }
+            }
+
 
             // Create an off-screen render target, copy styles and content from livePreviewContainer
             const renderTarget = document.createElement('div');
             renderTarget.className = `render-target`;
-            renderTarget.style.cssText = livePreviewContainer.style.cssText; // Copy the live styles
-            renderTarget.innerHTML = livePreviewContainer.innerHTML; // Copy the live content
+            // Apply the same styling logic as live preview, but ensure it uses the static mediaForCapture
+            // It's important to pass isVideo=false here because we want an <img> in the render target, not a <video>
+            buildPreviewContent(renderTarget, currentStyle, headline, details, mediaForCapture, false);
             
             document.body.appendChild(renderTarget); // Temporarily add to DOM for html2canvas
 
@@ -842,6 +863,7 @@
                 const imgUrl = canvas.toDataURL('image/png');
                 
                 // Replace live preview content with the generated image
+                // Use a direct <img> tag for the generated output
                 livePreviewContainer.innerHTML = `<img src="${imgUrl}" class="generated-image-display" alt="Generated News Post">`;
                 
                 // Enable download image button and store image data
@@ -862,11 +884,13 @@
                 console.error("Error generating image:", error);
                 alert("Could not generate image. Ensure files loaded correctly or try again.");
                 // Restore live preview content if generation fails
-                updateLivePreview(); 
+                updateLivePreview(mediaUpload.files[0]?.type.startsWith('video/')); 
             }).finally(() => {
                 document.body.removeChild(renderTarget); // Clean up the off-screen element
                 generateBtn.disabled = false;
                 generateBtn.textContent = 'Generate Image Post';
+                // Restore filename display after generation
+                fileNameSpan.textContent = mediaUpload.files[0] ? `Selected: ${mediaUpload.files[0].name}` : 'Note: Video uploads capture only the first frame for the image post.';
             });
         });
 
@@ -929,12 +953,12 @@
             document.querySelector('input[name="postStyle"][value="style1"]').checked = true;
             currentStyle = 'style1';
             currentMediaDataUrl = "https://placehold.co/600x800/000000/FFFFFF?text=Upload+Image+or+Video"; // Reset media URL
-            updateLivePreview(); // Update live preview to default state
+            updateLivePreview(false); // Update live preview to default state (image placeholder)
         });
 
         // Initial setup on window load
         window.onload = () => {
-            updateLivePreview(); // Call once to set initial live preview
+            updateLivePreview(false); // Call once to set initial live preview (image placeholder)
             downloadImgBtn.disabled = true;
             downloadImgBtn.style.opacity = 0.5;
             downloadImgBtn.style.cursor = 'not-allowed';
