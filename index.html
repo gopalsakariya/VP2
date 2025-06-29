@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>News Post Creator</title>
+    <title>News Post Creator 121</title>
     <!-- Tailwind CSS CDN -->
     <script src="https://cdn.tailwindcss.com"></script>
     <!-- Google Fonts - Bebas Neue -->
@@ -88,9 +88,11 @@
         #livePreviewContainer img.generated-image-display {
             width: 100%;
             height: 100%;
-            object-fit: contain; /* IMPORTANT: Generated image should also contain, not cover */
-            position: static; /* Override absolute positioning */
-            transform: none; /* Override translate */
+            object-fit: contain; /* CRITICAL FIX: Ensure generated image uses contain, not cover */
+            position: absolute; /* Re-apply absolute positioning for centering within livePreviewContainer */
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
             border-radius: 12px;
         }
 
@@ -421,7 +423,7 @@
         const summarizeDetailsBtn = document.getElementById('summarizeDetailsBtn');
 
         const livePreviewContainer = document.getElementById('livePreviewContainer'); // The single unified display div
-        // Declare returnToEditorBtn as a global constant so it's always defined
+        // Get reference to returnToEditorBtn at global scope
         const returnToEditorBtn = document.getElementById('returnToEditorBtn');
 
 
@@ -884,11 +886,9 @@
                 document.body.removeChild(a);
 
                 // Show "Return to Editor" button and configure it
-                if (returnToEditorBtn) { // Check if returnToEditorBtn is defined before accessing
-                    returnToEditorBtn.classList.remove('hidden');
-                    returnToEditorBtn.textContent = '✅ Image Downloaded! Return to Editor';
-                    returnToEditorBtn.onclick = returnToEditorMode; // Assign click handler
-                }
+                returnToEditorBtn.classList.remove('hidden'); // Access directly as it's global
+                returnToEditorBtn.textContent = '✅ Image Downloaded! Return to Editor';
+                returnToEditorBtn.onclick = returnToEditorMode; // Assign click handler
 
 
             }).catch(error => {
@@ -930,7 +930,7 @@
             downloadBtn.style.opacity = 1;
             downloadBtn.style.cursor = 'pointer';
             clearBtn.disabled = false;
-            if (returnToEditorBtn) returnToEditorBtn.classList.add('hidden'); // Hide return button
+            returnToEditorBtn.classList.add('hidden'); // Hide return button
             
             // Re-enable all input fields
             headlineInput.disabled = false;
@@ -943,8 +943,9 @@
 
         // Initial setup on window load
         window.onload = () => {
-            // returnToEditorBtn is now a global constant, no need to re-declare here.
-            // Just ensure its event listener is set up correctly once.
+            // returnToEditorBtn is already declared globally via const above.
+            // Just ensure it's hidden and its listener is properly assigned.
+            returnToEditorBtn.classList.add('hidden'); // Ensure it's hidden on initial load
 
             updateLivePreview(); // Call once to set initial live preview (image placeholder)
             // Ensure inputs are enabled on load
