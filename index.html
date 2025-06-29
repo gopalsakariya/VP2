@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>News Post Creator 22</title>
+    <title>News Post Creator</title>
     <!-- Tailwind CSS CDN -->
     <script src="https://cdn.tailwindcss.com"></script>
     <!-- Google Fonts - Bebas Neue -->
@@ -49,7 +49,6 @@
 
         /* Styling for the *rendering target* (used by html2canvas, kept off-screen) */
         .render-target {
-            /* This will be dynamically created and styled based on the current live preview */
             width: 600px;
             height: 800px;
             position: absolute;
@@ -89,7 +88,7 @@
         #livePreviewContainer img.generated-image-display {
             width: 100%;
             height: 100%;
-            object-fit: cover; /* This makes the generated image fill the container */
+            object-fit: contain; /* IMPORTANT: Generated image should also contain, not cover */
             position: static; /* Override absolute positioning */
             transform: none; /* Override translate */
             border-radius: 12px;
@@ -113,7 +112,7 @@
         .style1-text-overlay {
             position: absolute; bottom: 0; left: 0; right: 0;
             background-color: #000; padding: 20px;
-            display: flex; flex-direction: column; align-items: flex-start; /* Left Align */ justify-content: center;
+            display: flex; flex-direction: column; align-items: flex-start; justify-content: center;
             color: white; z-index: 10; min-height: 25%; box-sizing: border-box;
         }
         .style1-headline-text { text-transform: uppercase; text-align: left; line-height: 1.1; word-break: break-word; padding: 5px 0; text-shadow: 2px 2px 6px rgba(0, 0, 0, 0.9); width: 100%; color: #fff; }
@@ -124,7 +123,7 @@
         .style2-text-overlay {
             position: absolute; top: 0; left: 0; right: 0;
             background-color: #000; padding: 20px;
-            display: flex; flex-direction: column; align-items: flex-start; /* Left Align */ justify-content: center;
+            display: flex; flex-direction: column; align-items: flex-start; justify-content: center;
             color: white; z-index: 10; min-height: 20%; box-sizing: border-box;
         }
         .style2-headline-text { text-transform: uppercase; text-align: left; line-height: 1.1; word-break: break-word; text-shadow: 2px 2px 6px rgba(0, 0, 0, 0.9); width: 100%; color: #fff; }
@@ -201,34 +200,18 @@
         }
 
         /* Specific button colors */
-        #generateBtn {
-            background-image: linear-gradient(to right, #6a11cb 0%, #2575fc 100%);
-            color: white;
-        }
-
-        #downloadImgBtn { /* Renamed for clarity */
+        #downloadBtn { /* Now the main action button */
             background-image: linear-gradient(to right, #00b09b 0%, #96c93d 100%);
             color: white;
             opacity: 0.5;
             cursor: not-allowed;
         }
-        #downloadImgBtn:not([disabled]):hover {
+        #downloadBtn:not([disabled]):hover {
             background-image: linear-gradient(to right, #00c0ab 0%, #a6d94d 100%);
             opacity: 1;
             cursor: pointer;
         }
-        #downloadVideoBtn { /* New button for video download */
-            background-image: linear-gradient(to right, #f59e0b 0%, #d97706 100%); /* Amber color */
-            color: white;
-            opacity: 0.5;
-            cursor: not-allowed;
-        }
-        #downloadVideoBtn:not([disabled]):hover {
-            background-image: linear-gradient(to right, #fbbf24 0%, #f59e0b 100%);
-            opacity: 1;
-            cursor: pointer;
-        }
-
+       
         #clearBtn {
             background-image: linear-gradient(to right, #eb3941 0%, #f15e64 100%);
             color: white;
@@ -337,7 +320,7 @@
         }
     </style>
 </head>
-<body class="bg-gray-100 flex items-center justify-center p-4 min-h-screen">
+<body>
     <div id="appContainer" class="flex flex-col lg:flex-row bg-white rounded-xl shadow-lg p-8 space-y-8 lg:space-y-0 lg:space-x-8 max-w-6xl w-full">
 
         <!-- Input Section -->
@@ -364,7 +347,7 @@
                     <button class="btn-upload">Choose File</button>
                     <input type="file" id="mediaUpload" accept="image/*,video/*">
                 </div>
-                <p id="fileName" class="text-sm text-gray-500 mt-2">Note: Video uploads capture only the first frame for the image post.</p>
+                <p id="fileName" class="text-sm text-gray-500 mt-2">Note: Video uploads play in live preview. 'Download' will save a static image (PNG) with text overlays. **Right-click** media in preview to download the original file.</p>
             </div>
 
             <!-- Style Selection -->
@@ -403,24 +386,21 @@
             </div>
 
             <div class="flex justify-center space-x-4">
-                <button id="generateBtn" class="bg-gradient-to-r from-blue-600 to-indigo-700 hover:from-blue-700 hover:to-indigo-800 text-white font-bold py-3 px-6 rounded-lg shadow-lg transform transition duration-300 hover:scale-105">Generate Image Post</button>
+                <!-- Main Download Button -->
+                <button id="downloadBtn" class="bg-gradient-to-r from-green-500 to-emerald-600 hover:from-green-600 hover:to-emerald-700 text-white font-bold py-3 px-6 rounded-lg shadow-lg transform transition duration-300 hover:scale-105">Download</button>
                 <button id="clearBtn" class="bg-gradient-to-r from-red-500 to-red-600 hover:from-red-600 hover:to-red-700 text-white font-bold py-3 px-6 rounded-lg shadow-lg transform transition duration-300 hover:scale-105">Clear All</button>
             </div>
         </div>
 
         <!-- Preview and Output Section (Unified) -->
         <div class="preview-section flex flex-col w-full lg:w-1/2 items-center justify-center relative p-4">
-            <h2 class="text-2xl font-bold text-gray-800 mb-4">Live Preview / Generated Image</h2>
+            <h2 class="text-2xl font-bold text-gray-800 mb-4">Live Preview</h2>
             <!-- THIS IS THE ONLY VISIBLE DISPLAY AREA -->
             <div id="livePreviewContainer">
                 <!-- Content will be dynamically injected here by JS -->
             </div>
-
-            <!-- Download button area -->
-            <div id="outputButtons" class="flex flex-col items-center mt-8 w-full space-y-4">
-                <button id="downloadImgBtn" disabled class="bg-gradient-to-r from-green-500 to-emerald-600 hover:from-green-600 hover:to-emerald-700 text-white font-bold py-3 px-6 rounded-lg shadow-lg transform transition duration-300 hover:scale-105">Download Generated Image</button>
-                <button id="downloadVideoBtn" disabled class="bg-gradient-to-r from-amber-500 to-amber-700 hover:from-amber-600 hover:to-amber-800 text-white font-bold py-3 px-6 rounded-lg shadow-lg transform transition duration-300 hover:scale-105 hidden">Download Original Video</button>
-            </div>
+            <!-- This button appears ONLY after download is attempted, to return to editor -->
+            <button id="returnToEditorBtn" class="mt-4 hidden"></button>
         </div>
     </div>
 
@@ -433,9 +413,7 @@
         const detailsInput = document.getElementById('detailsInput');
         const mediaUpload = document.getElementById('mediaUpload');
         const fileNameSpan = document.getElementById('fileName');
-        const generateBtn = document.getElementById('generateBtn');
-        const downloadImgBtn = document.getElementById('downloadImgBtn'); // Renamed
-        const downloadVideoBtn = document.getElementById('downloadVideoBtn'); // New Video Download Button
+        const downloadBtn = document.getElementById('downloadBtn'); // Now the main action button
         const clearBtn = document.getElementById('clearBtn');
         const styleRadios = document.querySelectorAll('input[name="postStyle"]');
 
@@ -443,10 +421,14 @@
         const summarizeDetailsBtn = document.getElementById('summarizeDetailsBtn');
 
         const livePreviewContainer = document.getElementById('livePreviewContainer'); // The single unified display div
+        // Declare returnToEditorBtn as a global constant so it's always defined
+        const returnToEditorBtn = document.getElementById('returnToEditorBtn');
+
 
         let currentStyle = 'style1'; // Default active style on load
         let currentMediaDataUrl = "https://placehold.co/600x800/000000/FFFFFF?text=Upload+Image+or+Video"; // Stores URL for live preview media
-        let originalVideoFileUrl = null; // Stores URL for original video download
+        let currentMediaType = 'image'; // 'image' or 'video'
+        let originalUploadedFile = null; // Stores the original File object for processing
 
 
         // Function to dynamically adjust font size based on content length
@@ -519,9 +501,8 @@
             return '16px'; // Default fallback
         }
 
-        // This function builds the HTML content for the live preview and the off-screen render target
-        // It's crucial that this function creates the full innerHTML structure
-        function buildPreviewContent(targetElement, styleId, headlineText, detailsText, mediaDataUrl, isVideo = false) {
+        // This function builds the HTML content for the live preview AND the off-screen render target
+        function buildPreviewContent(targetElement, styleId, headlineText, detailsText, mediaDataUrl, mediaType) {
             const hasDetails = detailsText.length > 0;
             const headlineFontSize = getAdjustedFontSize(headlineText, 'headline', styleId, hasDetails);
             const detailsFontSize = getAdjustedFontSize(detailsText, 'details', styleId);
@@ -529,8 +510,8 @@
 
             let contentHTML = '';
             
-            // Choose between img or video tag for media display in live preview
-            const mediaTag = isVideo ? 
+            // Choose between img or video tag for media display based on mediaType
+            const mediaTag = (targetElement.id === 'livePreviewContainer' && mediaType === 'video') ? 
                 `<video class="post-media-element" src="${mediaDataUrl}" autoplay loop controls playsinline></video>` :
                 `<img class="post-media-element" src="${mediaDataUrl}" alt="Background Media">`;
             
@@ -652,6 +633,7 @@
 
 
         // --- Video Frame Capture Logic ---
+        // This function captures a single frame from a video file as a Data URL (PNG)
         async function captureVideoFrame(videoFile) {
             return new Promise((resolve, reject) => {
                 const video = document.createElement('video');
@@ -697,16 +679,35 @@
         }
 
         // --- Live Preview Update Function ---
-        function updateLivePreview(isVideoSource = false) { // Added isVideoSource parameter
+        // This function updates the single visible live preview based on current inputs and selected style
+        function updateLivePreview() {
             const headline = headlineInput.value.toUpperCase();
             const details = detailsInput.value;
-            buildPreviewContent(livePreviewContainer, currentStyle, headline, details, currentMediaDataUrl, isVideoSource);
+            // Pass currentMediaType to buildPreviewContent
+            buildPreviewContent(livePreviewContainer, currentStyle, headline, details, currentMediaDataUrl, currentMediaType);
+        }
+
+        // --- Function to switch back to editor mode (live preview) ---
+        function returnToEditorMode() {
+            updateLivePreview(); // Re-render live preview with current inputs
+            returnToEditorBtn.classList.add('hidden'); // Hide the "Return to Editor" button
+            // Re-enable input fields
+            headlineInput.disabled = false;
+            detailsInput.disabled = false;
+            mediaUpload.disabled = false;
+            generateHeadlineBtn.disabled = false;
+            summarizeDetailsBtn.disabled = false;
+            styleRadios.forEach(radio => radio.disabled = false);
+            downloadBtn.disabled = false; // Enable download button
+            downloadBtn.style.opacity = 1;
+            downloadBtn.style.cursor = 'pointer';
+            clearBtn.disabled = false; // Enable clear button
         }
 
 
         // Event listeners for inputs and style changes (triggering live preview update)
-        headlineInput.addEventListener('input', () => updateLivePreview(mediaUpload.files[0]?.type.startsWith('video/')));
-        detailsInput.addEventListener('input', () => updateLivePreview(mediaUpload.files[0]?.type.startsWith('video/')));
+        headlineInput.addEventListener('input', updateLivePreview);
+        detailsInput.addEventListener('input', updateLivePreview);
 
         mediaUpload.addEventListener('change', async (event) => {
             const file = event.target.files[0];
@@ -716,53 +717,40 @@
                 if (currentMediaDataUrl && currentMediaDataUrl.startsWith('blob:')) {
                     URL.revokeObjectURL(currentMediaDataUrl);
                 }
-                if (originalVideoFileUrl && originalVideoFileUrl.startsWith('blob:')) {
-                    URL.revokeObjectURL(originalVideoFileUrl);
-                }
-                originalVideoFileUrl = null; // Reset original video URL
+                originalUploadedFile = file; // Store the original File object
 
                 if (file.type.startsWith('image/')) {
+                    currentMediaType = 'image';
                     currentMediaDataUrl = URL.createObjectURL(file);
-                    updateLivePreview(false); // It's an image
-                    downloadVideoBtn.classList.add('hidden'); // Hide video download button
-                    downloadVideoBtn.disabled = true;
+                    updateLivePreview();
                 } else if (file.type.startsWith('video/')) {
-                    originalVideoFileUrl = URL.createObjectURL(file); // Store URL for original video download
-                    currentMediaDataUrl = originalVideoFileUrl; // Live preview shows the actual video
-                    updateLivePreview(true); // It's a video, tell live preview to use video tag
-                    fileNameSpan.textContent = `Playing video: ${file.name}`; // Update text for video playback
-                    downloadVideoBtn.classList.remove('hidden'); // Show video download button
-                    downloadVideoBtn.disabled = false;
-                    downloadVideoBtn.dataset.videoUrl = originalVideoFileUrl; // Set video URL for download
-                    downloadVideoBtn.dataset.filename = file.name; // Set original filename
+                    currentMediaType = 'video';
+                    currentMediaDataUrl = URL.createObjectURL(file); // Live preview shows the actual video
+                    updateLivePreview(); // Build with video tag immediately
+                    fileNameSpan.textContent = `Playing video: ${file.name}`;
                 } else {
                     alert("Unsupported file type. Please upload an image or video.");
+                    currentMediaType = 'image'; // Fallback to image type
                     currentMediaDataUrl = "https://placehold.co/600x800/000000/FFFFFF?text=Unsupported+File";
-                    updateLivePreview(false); // Fallback to image preview
+                    updateLivePreview();
                     fileNameSpan.textContent = 'Unsupported file type.';
-                    downloadVideoBtn.classList.add('hidden'); // Hide video download button for unsupported
-                    downloadVideoBtn.disabled = true;
                 }
             } else {
-                fileNameSpan.textContent = 'Note: Video uploads capture only the first frame for the image post.';
+                fileNameSpan.textContent = 'Note: Video uploads play in live preview. \'Download\' will save a static image (PNG) with text overlays. **Right-click** media in preview to download the original file.';
                 if (currentMediaDataUrl && currentMediaDataUrl.startsWith('blob:')) {
                     URL.revokeObjectURL(currentMediaDataUrl);
                 }
-                if (originalVideoFileUrl && originalVideoFileUrl.startsWith('blob:')) {
-                    URL.revokeObjectURL(originalVideoFileUrl);
-                }
+                currentMediaType = 'image';
                 currentMediaDataUrl = "https://placehold.co/600x800/000000/FFFFFF?text=Upload+Image+or+Video";
-                originalVideoFileUrl = null;
-                updateLivePreview(false); // Default to image placeholder
-                downloadVideoBtn.classList.add('hidden');
-                downloadVideoBtn.disabled = true;
+                originalUploadedFile = null;
+                updateLivePreview();
             }
         });
 
         styleRadios.forEach(radio => {
             radio.addEventListener('change', (event) => {
                 currentStyle = event.target.value;
-                updateLivePreview(mediaUpload.files[0]?.type.startsWith('video/')); // Pass current media type
+                updateLivePreview(); // Update preview when style changes
             });
         });
 
@@ -781,7 +769,7 @@
                 const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${apiKey}`;
                 const response = await fetch(apiUrl, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(payload) });
                 const result = await response.json();
-                if (result.candidates && result.candidates.length > 0) { headlineInput.value = result.candidates[0].content.parts[0].text.toUpperCase().replace(/[\*\_\`]/g, ''); updateLivePreview(mediaUpload.files[0]?.type.startsWith('video/')); }
+                if (result.candidates && result.candidates.length > 0) { headlineInput.value = result.candidates[0].content.parts[0].text.toUpperCase().replace(/[\*\_\`]/g, ''); updateLivePreview(); }
                 else { console.error("API response unexpected:", result); alert("Could not generate headline. Try again."); }
             } catch (error) { console.error("Error calling API:", error); alert("Error generating headline. Check network."); }
             finally { generateHeadlineBtn.disabled = false; generateHeadlineBtn.textContent = '✨ Generate Headline Suggestion'; }
@@ -800,57 +788,75 @@
                 const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${apiKey}`;
                 const response = await fetch(apiUrl, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(payload) });
                 const result = await response.json();
-                if (result.candidates && result.candidates.length > 0) { detailsInput.value = result.candidates[0].content.parts[0].text.replace(/[\*\_\`]/g, ''); updateLivePreview(mediaUpload.files[0]?.type.startsWith('video/')); }
+                if (result.candidates && result.candidates.length > 0) { detailsInput.value = result.candidates[0].content.parts[0].text.replace(/[\*\_\`]/g, ''); updateLivePreview(); }
                 else { console.error("API response unexpected:", result); alert("Could not summarize. Try again."); }
             } catch (error) { console.error("Error calling API:", error); alert("Error summarizing. Check network."); }
             finally { summarizeDetailsBtn.disabled = false; summarizeDetailsBtn.textContent = '✨ Summarize Details'; }
         });
 
 
-        // Event listener for "Generate Image Post" button click
-        generateBtn.addEventListener('click', async () => {
-            generateBtn.disabled = true;
-            generateBtn.textContent = 'Generating...';
+        // Event listener for "Download" button click (This now acts as the generation and download trigger)
+        downloadBtn.addEventListener('click', async () => {
+            // Disable inputs and controls during processing
+            downloadBtn.disabled = true;
+            downloadBtn.textContent = 'Processing...';
+            clearBtn.disabled = true;
 
-            // Disable download buttons
-            downloadImgBtn.disabled = true;
-            downloadImgBtn.style.opacity = 0.5;
-            downloadImgBtn.style.cursor = 'not-allowed';
-            delete downloadImgBtn.dataset.imgUrl;
-            delete downloadImgBtn.dataset.filename;
+            headlineInput.disabled = true;
+            detailsInput.disabled = true;
+            mediaUpload.disabled = true;
+            generateHeadlineBtn.disabled = true;
+            summarizeDetailsBtn.disabled = true;
+            styleRadios.forEach(radio => radio.disabled = true);
 
-            downloadVideoBtn.disabled = true;
-            downloadVideoBtn.style.opacity = 0.5;
-            downloadVideoBtn.style.cursor = 'not-allowed';
-
-
-            const headline = headlineInput.value.toUpperCase();
-            const details = detailsInput.value;
-            let mediaForCapture = currentMediaDataUrl; // Use the URL currently in the live preview
+            let mediaForCaptureUrl = currentMediaDataUrl; // Use the URL currently in the live preview
 
             // If it's a video in live preview, capture a static frame for the generated image
-            if (mediaUpload.files[0]?.type.startsWith('video/')) {
-                 fileNameSpan.textContent = `Capturing video frame for generated image...`;
+            if (currentMediaType === 'video' && originalUploadedFile) {
+                 fileNameSpan.textContent = `Capturing video frame for download...`;
                  try {
-                    // Capture a new frame from the current original video source for accuracy
-                    mediaForCapture = await captureVideoFrame(mediaUpload.files[0]);
+                    mediaForCaptureUrl = await captureVideoFrame(originalUploadedFile);
                  } catch (error) {
-                    alert("Could not capture video frame for image generation. Please try another video or an image.");
-                    console.error("Video frame capture for generation error:", error);
-                    generateBtn.disabled = false;
-                    generateBtn.textContent = 'Generate Image Post';
+                    alert("Could not capture video frame for download. Please try another video or an image.");
+                    console.error("Video frame capture error:", error);
+                    returnToEditorMode(); // Re-enable editor on failure
                     fileNameSpan.textContent = 'Error capturing frame.';
                     return;
                  }
             }
 
 
-            // Create an off-screen render target, copy styles and content from livePreviewContainer
-            const renderTarget = document.createElement('div');
-            renderTarget.className = `render-target`;
-            // Apply the same styling logic as live preview, but ensure it uses the static mediaForCapture
-            // It's important to pass isVideo=false here because we want an <img> in the render target, not a <video>
-            buildPreviewContent(renderTarget, currentStyle, headline, details, mediaForCapture, false);
+            const headline = headlineInput.value.toUpperCase();
+            const details = detailsInput.value;
+
+            // Create an off-screen render target by cloning the live preview's current state
+            const renderTarget = livePreviewContainer.cloneNode(true); // Deep clone
+            renderTarget.id = 'renderTargetClone'; // Give it a unique ID
+            // Reset position for rendering
+            renderTarget.style.position = 'absolute';
+            renderTarget.style.left = '-9999px';
+            renderTarget.style.top = '-9999px';
+            renderTarget.style.width = '600px'; // Ensure fixed size for capture
+            renderTarget.style.height = '800px';
+
+            // IMPORTANT: If a video was playing, replace it with its captured static frame in the clone
+            const videoElementInClone = renderTarget.querySelector('video.post-media-element');
+            if (videoElementInClone) {
+                const imgStaticClone = document.createElement('img');
+                imgStaticClone.className = 'post-media-element'; // Retain styling classes
+                imgStaticClone.src = mediaForCaptureUrl; // Use the captured static frame
+                imgStaticClone.alt = "Static Video Frame";
+                // Ensure correct object-fit for the static image being rendered
+                imgStaticClone.style.objectFit = 'contain'; 
+                imgStaticClone.style.position = 'absolute';
+                imgStaticClone.style.top = '50%';
+                imgStaticClone.style.left = '50%';
+                imgStaticClone.style.transform = 'translate(-50%, -50%)';
+                imgStaticClone.style.width = '100%';
+                imgStaticClone.style.height = '100%';
+
+                videoElementInClone.replaceWith(imgStaticClone); // Replace video with static image
+            }
             
             document.body.appendChild(renderTarget); // Temporarily add to DOM for html2canvas
 
@@ -862,70 +868,41 @@
             }).then(canvas => {
                 const imgUrl = canvas.toDataURL('image/png');
                 
-                // Replace live preview content with the generated image
-                // Use a direct <img> tag for the generated output
+                // Replace live preview container's content with the generated STATIC image
+                // Ensure the generated image takes up the full space (object-fit: contain for aspect ratio)
                 livePreviewContainer.innerHTML = `<img src="${imgUrl}" class="generated-image-display" alt="Generated News Post">`;
-                
-                // Enable download image button and store image data
-                downloadImgBtn.disabled = false;
-                downloadImgBtn.style.opacity = 1;
-                downloadImgBtn.style.cursor = 'pointer';
-                downloadImgBtn.dataset.imgUrl = imgUrl;
-                downloadImgBtn.dataset.filename = `news_post_${currentStyle}.png`;
+                livePreviewContainer.style.flexDirection = 'column'; // Reset to default layout if overridden by style
+                livePreviewContainer.style.justifyContent = 'center'; // Center the image if it's the only content
+                livePreviewContainer.style.alignItems = 'center'; // Center horizontally as well for the single image
 
-                // Re-enable video download button if an original video was uploaded
-                if (originalVideoFileUrl) {
-                    downloadVideoBtn.disabled = false;
-                    downloadVideoBtn.style.opacity = 1;
-                    downloadVideoBtn.style.cursor = 'pointer';
+                // Trigger immediate download
+                const a = document.createElement('a');
+                a.href = imgUrl;
+                a.download = `news_post_${currentStyle}.png`;
+                document.body.appendChild(a);
+                a.click();
+                document.body.removeChild(a);
+
+                // Show "Return to Editor" button and configure it
+                if (returnToEditorBtn) { // Check if returnToEditorBtn is defined before accessing
+                    returnToEditorBtn.classList.remove('hidden');
+                    returnToEditorBtn.textContent = '✅ Image Downloaded! Return to Editor';
+                    returnToEditorBtn.onclick = returnToEditorMode; // Assign click handler
                 }
+
 
             }).catch(error => {
                 console.error("Error generating image:", error);
                 alert("Could not generate image. Ensure files loaded correctly or try again.");
-                // Restore live preview content if generation fails
-                updateLivePreview(mediaUpload.files[0]?.type.startsWith('video/')); 
+                returnToEditorMode(); // Re-enable editor on failure
             }).finally(() => {
-                document.body.removeChild(renderTarget); // Clean up the off-screen element
-                generateBtn.disabled = false;
-                generateBtn.textContent = 'Generate Image Post';
-                // Restore filename display after generation
-                fileNameSpan.textContent = mediaUpload.files[0] ? `Selected: ${mediaUpload.files[0].name}` : 'Note: Video uploads capture only the first frame for the image post.';
+                document.body.removeChild(renderTarget); // Clean up off-screen element
+                downloadBtn.disabled = false; // Re-enable download button
+                downloadBtn.textContent = 'Download';
+                clearBtn.disabled = false; // Re-enable clear button
+                // Restore filename display (or specific video playing message)
+                fileNameSpan.textContent = originalUploadedFile ? `Selected: ${originalUploadedFile.name}` + (currentMediaType === 'video' ? ' (Playing in preview)' : '') : 'Note: Video uploads play in live preview. \'Download\' will save a static image (PNG) with text overlays. **Right-click** media in preview to download the original file.';
             });
-        });
-
-        // Event listener for "Download Generated Image" button click
-        downloadImgBtn.addEventListener('click', () => {
-            const imgUrl = downloadImgBtn.dataset.imgUrl;
-            const filename = downloadImgBtn.dataset.filename;
-
-            if (imgUrl) {
-                const a = document.createElement('a');
-                a.href = imgUrl;
-                a.download = filename;
-                document.body.appendChild(a);
-                a.click();
-                document.body.removeChild(a);
-            } else {
-                alert("No image generated to download. Please click 'Generate Image Post' first.");
-            }
-        });
-
-        // Event listener for "Download Original Video" button click
-        downloadVideoBtn.addEventListener('click', () => {
-            const videoUrl = downloadVideoBtn.dataset.videoUrl;
-            const filename = downloadVideoBtn.dataset.filename;
-
-            if (videoUrl) {
-                const a = document.createElement('a');
-                a.href = videoUrl;
-                a.download = `original_video_${filename}`; // Add a prefix for clarity
-                document.body.appendChild(a);
-                a.click();
-                document.body.removeChild(a);
-            } else {
-                alert("No original video found to download.");
-            }
         });
 
 
@@ -934,38 +911,52 @@
             headlineInput.value = '';
             detailsInput.value = '';
             mediaUpload.value = '';
-            fileNameSpan.textContent = 'Note: Video uploads capture only the first frame for the image post.';
+            fileNameSpan.textContent = 'Note: Video uploads play in live preview. \'Download\' will save a static image (PNG) with text overlays. **Right-click** media in preview to download the original file.';
 
-            // Reset download image button state
-            downloadImgBtn.disabled = true;
-            downloadImgBtn.style.opacity = 0.5;
-            downloadImgBtn.style.cursor = 'not-allowed';
-            delete downloadImgBtn.dataset.imgUrl;
-            delete downloadImgBtn.dataset.filename;
+            // Reset original uploaded file reference
+            if (originalUploadedFile && originalUploadedFile.startsWith('blob:')) {
+                URL.revokeObjectURL(originalUploadedFile);
+            }
+            originalUploadedFile = null;
 
-            // Reset download video button state
-            downloadVideoBtn.disabled = true;
-            downloadVideoBtn.style.opacity = 0.5;
-            downloadVideoBtn.style.cursor = 'not-allowed';
-            downloadVideoBtn.classList.add('hidden'); // Hide video download button
-            originalVideoFileUrl = null; // Clear original video URL
-
-            document.querySelector('input[name="postStyle"][value="style1"]').checked = true;
+            // Reset live preview to default placeholder
             currentStyle = 'style1';
-            currentMediaDataUrl = "https://placehold.co/600x800/000000/FFFFFF?text=Upload+Image+or+Video"; // Reset media URL
-            updateLivePreview(false); // Update live preview to default state (image placeholder)
+            currentMediaDataUrl = "https://placehold.co/600x800/000000/FFFFFF?text=Upload+Image+or+Video";
+            currentMediaType = 'image';
+            updateLivePreview(); // Build initial preview content
+
+            // Reset button states and hide return button
+            downloadBtn.disabled = false;
+            downloadBtn.style.opacity = 1;
+            downloadBtn.style.cursor = 'pointer';
+            clearBtn.disabled = false;
+            if (returnToEditorBtn) returnToEditorBtn.classList.add('hidden'); // Hide return button
+            
+            // Re-enable all input fields
+            headlineInput.disabled = false;
+            detailsInput.disabled = false;
+            mediaUpload.disabled = false;
+            generateHeadlineBtn.disabled = false;
+            summarizeDetailsBtn.disabled = false;
+            styleRadios.forEach(radio => radio.disabled = false);
         });
 
         // Initial setup on window load
         window.onload = () => {
-            updateLivePreview(false); // Call once to set initial live preview (image placeholder)
-            downloadImgBtn.disabled = true;
-            downloadImgBtn.style.opacity = 0.5;
-            downloadImgBtn.style.cursor = 'not-allowed';
-            downloadVideoBtn.disabled = true;
-            downloadVideoBtn.style.opacity = 0.5;
-            downloadVideoBtn.style.cursor = 'not-allowed';
-            downloadVideoBtn.classList.add('hidden'); // Ensure hidden on load
+            // returnToEditorBtn is now a global constant, no need to re-declare here.
+            // Just ensure its event listener is set up correctly once.
+
+            updateLivePreview(); // Call once to set initial live preview (image placeholder)
+            // Ensure inputs are enabled on load
+            headlineInput.disabled = false;
+            detailsInput.disabled = false;
+            mediaUpload.disabled = false;
+            generateHeadlineBtn.disabled = false;
+            summarizeDetailsBtn.disabled = false;
+            styleRadios.forEach(radio => radio.disabled = false);
+            downloadBtn.disabled = false; // Download button is active from start
+            downloadBtn.style.opacity = 1;
+            downloadBtn.style.cursor = 'pointer';
         };
     </script>
 </body>
